@@ -11,6 +11,7 @@ When triggered, you must follow these architecture, interaction, and styling rul
 
 ## 1. Architecture & Interaction Rules
 
+- **Authentication:** All admin routes must be protected by an authentication system. Unauthenticated users are redirected to a dedicated `/admin/login` page.
 - **Pages over Modals:** Strictly use dedicated, full-page views for all "Create" and "Edit" actions (e.g., a specific page for creating or editing a product).
 - **Modals:** Reserve Modals ONLY for destructive actions (e.g., a "Delete" confirmation popup).
 
@@ -55,7 +56,32 @@ Implement state or routing to handle navigation between main views and sub-pages
 ### 'Configuración' (Settings)
 - A form view with Company Profile (Name, Description, Logo upload).
 - Optional Social Media Links (Facebook, TikTok, Instagram, X, LinkedIn).
-- Include a "Guardar Cambios" button.
+- A section for managing "Categorías" (Categories) as a data table.
+  - **Categorías Columns:** Name, Shows as Page (`has_page` boolean indicator), and Actions.
+  - **Categorías Actions:** Add a "New Category" button. Edit and Delete action icons on each row.
+- A section for managing "Usuarios" (Users) as a data table.
+  - **Usuarios Columns:** Name, Email, Role (e.g., Admin, Editor), and Actions.
+  - **Usuarios Actions:** Add a "New User" button. Edit and Delete action icons on each row.
+- Include a "Guardar Cambios" button for the main company profile.
+
+### 'Create/Edit Category' Modal or Sub-page
+- A dedicated form (can be a modal or sub-page within settings) with the following exact fields:
+  - **Name:** Standard text input.
+  - **Shows as Page (`has_page`):** A sleek boolean Toggle/Switch component. If true, the category must be listed as a page in the website.
+- Include primary "Save" and secondary "Cancel" (Back) buttons.
+
+### 'Create/Edit User' Modal or Sub-page
+- A dedicated form with the following exact fields:
+  - **Name:** Standard text input.
+  - **Email:** Email input.
+  - **Role:** Select/Dropdown (e.g., Administrador, Editor).
+  - **Password:** Password input (only required on creation, optional on edit).
+- Include primary "Save" and secondary "Cancel" (Back) buttons.
+
+### 'Login' Page
+- A clean, centered, premium minimalist login card.
+- Standard Email and Password fields.
+- Primary "Ingresar" button.
 
 ## 4. Styling
 

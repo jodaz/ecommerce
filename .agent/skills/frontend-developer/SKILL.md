@@ -1,19 +1,22 @@
 ---
 name: frontend-dev-guidelines
-description: Opinionated frontend development standards for modern React + TypeScript applications. Covers Suspense-first data fetching, lazy loading, feature-based architecture, MUI v7 styling, TanStack Router, performance optimization, and strict TypeScript practices.
+description: Opinionated frontend development standards for modern Next.js + React + TypeScript applications. Covers Server-first architecture (RSC), App Router, Tailwind CSS, Server Actions, feature-based architecture, performance optimization, and strict TypeScript practices.
 ---
 
 
 # Frontend Development Guidelines
 
-**(React · TypeScript · Suspense-First · Production-Grade)**
+**(Next.js App Router · React Server Components · Tailwind CSS · TypeScript · Production-Grade)**
 
 You are a **senior frontend engineer** operating under strict architectural and performance standards.
 
-Your goal is to build **scalable, predictable, and maintainable React applications** using:
+Your goal is to build **scalable, predictable, and maintainable Next.js applications** using:
 
-* Suspense-first data fetching
+* Server-first architecture using React Server Components (RSC)
+* Next.js App Router (`app/` directory)
 * Feature-based code organization
+* Tailwind CSS + shadcn/ui for styling and components
+* Mobile-first responsive design
 * Strict TypeScript discipline
 * Performance-safe defaults
 
@@ -29,9 +32,9 @@ Before implementing a component, page, or feature, assess feasibility.
 
 | Dimension             | Question                                                         |
 | --------------------- | ---------------------------------------------------------------- |
-| **Architectural Fit** | Does this align with feature-based structure and Suspense model? |
+| **Architectural Fit** | Does this align with the Server Components / App Router model?   |
 | **Complexity Load**   | How complex is state, data, and interaction logic?               |
-| **Performance Risk**  | Does it introduce rendering, bundle, or CLS risk?                |
+| **Performance Risk**  | Does it introduce rendering, bundle size, or CLS risk?           |
 | **Reusability**       | Can this be reused without modification?                         |
 | **Maintenance Cost**  | How hard will this be to reason about in 6 months?               |
 
@@ -56,31 +59,38 @@ FFCI = (Architectural Fit + Reusability + Performance) − (Complexity + Mainten
 
 ## 2. Core Architectural Doctrine (Non-Negotiable)
 
-### 1. Suspense Is the Default
+### 1. Server Components Are the Default
+* All components are React Server Components by default.
+* Provide data to the client using server-rendered HTML.
+* Use `"use client"` **only** when interactivity (hooks, event listeners) or browser APIs are required.
+* Keep Client Components as small as possible; pass Server Components as `children` to Client Components if needed.
 
-* `useSuspenseQuery` is the **primary** data-fetching hook
-* No `isLoading` conditionals
-* No early-return spinners
+### 2. Next.js App Router
+* Use folder-based routing in the `app/` directory (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`).
+* Colocate route-specific components inside the route folder if they are not shared.
 
-### 2. Lazy Load Anything Heavy
+### 3. Tailwind CSS + shadcn/ui
+* Use pure Tailwind CSS utility classes and shadcn/ui components.
+* Avoid other UI component libraries (e.g., MUI).
+* shadcn/ui components are the source of truth for all complex primitives (Modals, Popovers, Tabs).
+* Use `clsx` and `tailwind-merge` (the `cn` utility) for conditional class joining.
 
-* Routes
-* Feature entry components
-* Data grids, charts, editors
-* Large dialogs or modals
+### 4. Feature-Based Organization
+* Domain logic lives in `src/features/`
+* Reusable primitives (Buttons, Inputs) live in `src/components/`
+* The `src/app/` directory is purely for routing and composing features.
+* Cross-feature coupling is forbidden.
 
-### 3. Feature-Based Organization
-
-* Domain logic lives in `features/`
-* Reusable primitives live in `components/`
-* Cross-feature coupling is forbidden
-
-### 4. TypeScript Is Strict
-
+### 5. Strict TypeScript
 * No `any`
-* Explicit return types
+* Handle `null` and `undefined` explicitly
 * `import type` always
-* Types are first-class design artifacts
+
+### 6. Mobile-First Responsiveness
+* All UI must be designed and implemented mobile-first.
+* Use base Tailwind classes for mobile styles (e.g., `flex-col`, `text-sm`).
+* Use breakpoint prefixes (`sm:`, `md:`, `lg:`) only to add or override styles for larger screens.
+* Avoid using max-width based media queries; stick to Tailwind's min-width default breakpoints.
 
 ---
 
@@ -88,11 +98,11 @@ FFCI = (Architectural Fit + Reusability + Performance) − (Complexity + Mainten
 
 Use **frontend-dev-guidelines** when:
 
-* Creating components or pages
+* Creating components or pages in Next.js
 * Adding new features
-* Fetching or mutating data
-* Setting up routing
-* Styling with MUI
+* Fetching or mutating data (Server Actions vs Client fetching)
+* Setting up routing (`app/` router)
+* Styling with Tailwind CSS
 * Addressing performance issues
 * Reviewing or refactoring frontend code
 
@@ -102,27 +112,22 @@ Use **frontend-dev-guidelines** when:
 
 ### New Component Checklist
 
-* [ ] `React.FC<Props>` with explicit props interface
-* [ ] Lazy loaded if non-trivial
-* [ ] Wrapped in `<SuspenseLoader>`
-* [ ] Uses `useSuspenseQuery` for data
-* [ ] No early returns
-* [ ] Handlers wrapped in `useCallback`
-* [ ] Styles inline if <100 lines
-* [ ] Default export at bottom
-* [ ] Uses `useMuiSnackbar` for feedback
-
----
+* [ ] Decide if it should be a Server or Client component (Server by default).
+* [ ] If Client component, add `"use client"` at the very top.
+* [ ] Use shadcn/ui components for complex interactive parts (Buttons, Dialogs).
+* [ ] Implement mobile-first responsive styles (base classes for mobile, prefixes for larger screens).
+* [ ] `export default function Component(props: Props)` or `export const Component = ...`
+* [ ] Explicitly type props.
+* [ ] Styles applied strictly via Tailwind CSS classes.
+* [ ] No inline styles unless for dynamic variables.
 
 ### New Feature Checklist
 
-* [ ] Create `features/{feature-name}/`
-* [ ] Subdirs: `api/`, `components/`, `hooks/`, `helpers/`, `types/`
-* [ ] API layer isolated in `api/`
-* [ ] Public exports via `index.ts`
-* [ ] Feature entry lazy loaded
-* [ ] Suspense boundary at feature level
-* [ ] Route defined under `routes/`
+* [ ] Create `src/features/{feature-name}/`
+* [ ] Subdirs: `actions/` (Server Actions), `components/`, `types/`, `helpers/`
+* [ ] Isolate domain logic within the feature folder.
+* [ ] Public exports via `index.ts` if creating a module boundary.
+* [ ] Compose the feature inside `src/app/` route pages.
 
 ---
 
@@ -132,229 +137,181 @@ Use **frontend-dev-guidelines** when:
 | ------------- | ---------------- |
 | `@/`          | `src/`           |
 | `~types`      | `src/types`      |
-| `~components` | `src/components` |
-| `~features`   | `src/features`   |
 
-Aliases must be used consistently. Relative imports beyond one level are discouraged.
+Aliases must be used consistently. Use `@/features/...`, `@/components/...`, and `~types/...`.
 
 ---
 
 ## 6. Component Standards
 
-### Required Structure Order
-
-1. Types / Props
-2. Hooks
-3. Derived values (`useMemo`)
-4. Handlers (`useCallback`)
-5. Render
-6. Default export
-
-### Lazy Loading Pattern
-
-```ts
-const HeavyComponent = React.lazy(() => import('./HeavyComponent'));
-```
-
-Always wrapped in `<SuspenseLoader>`.
-
----
-
-## 7. Data Fetching Doctrine
-
-### Primary Pattern
-
-* `useSuspenseQuery`
-* Cache-first
-* Typed responses
-
-### Forbidden Patterns
-
-❌ `isLoading`
-❌ manual spinners
-❌ fetch logic inside components
-❌ API calls without feature API layer
-
-### API Layer Rules
-
-* One API file per feature
-* No inline axios calls
-* No `/api/` prefix in routes
-
----
-
-## 8. Routing Standards (TanStack Router)
-
-* Folder-based routing only
-* Lazy load route components
-* Breadcrumb metadata via loaders
-* **Category Routing**: All category pages must be routed via search parameters: `/categories?q={categoryname}` (do not use path parameters like `/categories/$categoryname`).
-
-```ts
-export const Route = createFileRoute('/my-route/')({
-  component: MyPage,
-  loader: () => ({ crumb: 'My Route' }),
-});
-```
-
----
-
-## 9. Styling Standards (MUI v7)
-
-### Inline vs Separate
-
-* `<100 lines`: inline `sx`
-* `>100 lines`: `{Component}.styles.ts`
-
-### Grid Syntax (v7 Only)
+### Server Component (Default)
 
 ```tsx
-<Grid size={{ xs: 12, md: 6 }} /> // ✅
-<Grid xs={12} md={6} />          // ❌
+import { db } from '@/lib/db';
+import type { User } from '@/features/users/types';
+
+interface UserProfileProps {
+  userId: string;
+}
+
+export default async function UserProfile({ userId }: UserProfileProps) {
+  // Direct data fetching in the server component
+  const user: User = await db.getUser(userId);
+
+  return (
+    <div className="flex flex-col p-6 bg-white rounded-lg shadow-sm">
+      <h2 className="text-xl font-semibold text-gray-900">{user.name}</h2>
+    </div>
+  );
+}
 ```
 
-Theme access must always be type-safe.
+### Client Component
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+interface ToggleButtonProps {
+  initialState?: boolean;
+  className?: string;
+  onToggle: (state: boolean) => void;
+}
+
+export function ToggleButton({ initialState = false, className, onToggle }: ToggleButtonProps) {
+  const [active, setActive] = useState(initialState);
+
+  const handleClick = () => {
+    const newState = !active;
+    setActive(newState);
+    onToggle(newState);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className={twMerge(
+        clsx(
+          'px-4 py-2 rounded-md transition-colors',
+          active ? 'bg-black text-white' : 'bg-gray-200 text-gray-800',
+          className
+        )
+      )}
+    >
+      {active ? 'Active' : 'Inactive'}
+    </button>
+  );
+}
+```
 
 ---
 
-## 10. Loading & Error Handling
+## 7. Data Fetching & Mutations
 
-### Absolute Rule
+### Fetching (Queries)
+* **Default:** Fetch data directly in Server Components using `await fetch()` or direct DB/Service calls.
+* **Client-side Fetching:** If data must be fetched on the client (e.g., polling, highly interactive data, infinite scroll), use SWR, React Query, or `use` hooked with a cached promise.
 
-❌ Never return early loaders
-✅ Always rely on Suspense boundaries
+### Mutations
+* **Default:** Use Server Actions for form submissions and data mutations.
+* Pass Server Actions from Server Components to Client Components to handle interactivity with progressive enhancement.
 
-### User Feedback
+```tsx
+// @/features/posts/actions/createPost.ts
+'use server';
 
-* `useMuiSnackbar` only
-* No third-party toast libraries
+import { revalidatePath } from 'next/cache';
+import { db } from '@/lib/db';
 
----
-
-## 11. Performance Defaults
-
-* `useMemo` for expensive derivations
-* `useCallback` for passed handlers
-* `React.memo` for heavy pure components
-* Debounce search (300–500ms)
-* Cleanup effects to avoid leaks
-
-Performance regressions are bugs.
-
----
-
-## 12. TypeScript Standards
-
-* Strict mode enabled
-* No implicit `any`
-* Explicit return types
-* JSDoc on public interfaces
-* Types colocated with feature
+export async function createPost(formData: FormData) {
+  const title = formData.get('title') as string;
+  await db.posts.insert({ title });
+  revalidatePath('/posts');
+}
+```
 
 ---
 
-## 13. Canonical File Structure
+## 8. Routing Standards (Next.js App Router)
+
+* Folder-based routing exclusively.
+* Use `loading.tsx` to display basic skeletons during async Server Component rendering.
+* Use `error.tsx` to handle segment-level errors gracefully.
+* Search parameters are accessed via the `searchParams` prop in `page.tsx` (Server side) or `useSearchParams` hook (Client side).
+
+---
+
+## 9. Styling Standards (Tailwind CSS)
+
+### Pure Utility Classes
+* Use Tailwind utility classes only. Avoid abstracting to custom CSS files or inline styles unless absolutely necessary for dynamic layout calculations.
+* Use `twMerge(clsx(...))` when merging passed `className` props with default component classes to prevent styling collisions.
+
+---
+
+## 10. Performance Defaults
+
+* Use `next/image` for optimized images (Lazy loading, WebP format, responsive sizes).
+* Use `next/link` for prefetching and client-side navigation.
+* Use `next/font` to optimize font loading and prevent CLS.
+* Always analyze bundle sizes to ensure heavy interactive libraries are lazy-loaded (`next/dynamic`) or confined strictly to small Client Components.
+
+---
+
+## 11. Canonical File Structure
 
 ```
 src/
+  app/
+    (marketing)/
+      page.tsx
+      layout.tsx
+    dashboard/
+      loading.tsx
+      page.tsx
   features/
-    my-feature/
-      api/
+    products/
+      actions/
       components/
-      hooks/
       helpers/
-      types/
       index.ts
-
   components/
-    SuspenseLoader/
-    CustomAppBar/
-
-  routes/
-    my-route/
-      index.tsx
+    ui/
+      Button.tsx
+      Input.tsx
+  types/
+    user.ts
+    product.ts
 ```
 
 ---
 
-## 14. Canonical Component Template
+## 12. Anti-Patterns (Immediate Rejection)
 
-```ts
-import React, { useState, useCallback } from 'react';
-import { Box, Paper } from '@mui/material';
-import { useSuspenseQuery } from '@tanstack/react-query';
-import { featureApi } from '../api/featureApi';
-import type { FeatureData } from '~types/feature';
-
-interface MyComponentProps {
-  id: number;
-  onAction?: () => void;
-}
-
-export const MyComponent: React.FC<MyComponentProps> = ({ id, onAction }) => {
-  const [state, setState] = useState('');
-
-  const { data } = useSuspenseQuery<FeatureData>({
-    queryKey: ['feature', id],
-    queryFn: () => featureApi.getFeature(id),
-  });
-
-  const handleAction = useCallback(() => {
-    setState('updated');
-    onAction?.();
-  }, [onAction]);
-
-  return (
-    <Box sx={{ p: 2 }}>
-      <Paper sx={{ p: 3 }}>
-        {/* Content */}
-      </Paper>
-    </Box>
-  );
-};
-
-export default MyComponent;
-```
+❌ Placing `"use client"` at the top of every file "just in case".
+❌ Fetching initial required data in a `useEffect` on the client instead of doing it in a Server Component.
+❌ Using MUI, Bootstrap, or custom global CSS instead of Tailwind utility classes.
+❌ Passing massive unfetched payloads to client components instead of keeping serialization boundaries small.
+❌ Not handling Loading and Error states gracefully via `loading.tsx` and `error.tsx`.
 
 ---
 
-## 15. Anti-Patterns (Immediate Rejection)
-
-❌ Early loading returns
-❌ Feature logic in `components/`
-❌ Shared state via prop drilling instead of hooks
-❌ Inline API calls
-❌ Untyped responses
-❌ Multiple responsibilities in one component
-
----
-
-## 16. Integration With Other Skills
-
-* **frontend-design** → Visual systems & aesthetics
-* **page-cro** → Layout hierarchy & conversion logic
-* **analytics-tracking** → Event instrumentation
-* **backend-dev-guidelines** → API contract alignment
-* **error-tracking** → Runtime observability
-
----
-
-## 17. Operator Validation Checklist
+## 13. Operator Validation Checklist
 
 Before finalizing code:
 
-* [ ] FFCI ≥ 6
-* [ ] Suspense used correctly
-* [ ] Feature boundaries respected
-* [ ] No early returns
-* [ ] Types explicit and correct
-* [ ] Lazy loading applied
-* [ ] Performance safe
+* [ ] Are Server Components used wherever possible?
+* [ ] Is `"use client"` pushed down the component tree to the exact nodes that need it?
+* [ ] Are you using Next.js `Image`, `Link`, and `Font`?
+* [ ] Are mutations handled via Server Actions where appropriate?
+* [ ] Is all styling exclusively using Tailwind CSS?
 
 ---
 
-## 18. Skill Status
+## 14. Skill Status
 
 **Status:** Stable, opinionated, and enforceable
-**Intended Use:** Production React codebases with long-term maintenance horizons
-
+**Intended Use:** Next.js Applications prioritizing Server Components, Server Actions, and Tailwind CSS.

@@ -1,502 +1,143 @@
 # Component Patterns
 
-Modern React component architecture for the application emphasizing type safety, lazy loading, and Suspense boundaries.
+This document establishes the structural rules for all React components in the Next.js frontend architecture.
 
 ---
 
-## React.FC Pattern (PREFERRED)
+## 1. File Structure & Colocation
 
-### Why React.FC
+### Single File Principle
+* Components under 150 lines should keep their types, sub-components, and styling helpers in the same file.
+* Use **shadcn/ui** components located in `@/components/ui/` as your building blocks.
+* If a component grows too large, extract sub-components into sibling files within the same domain directory.
 
-All components use the `React.FC<Props>` pattern for:
-- Explicit type safety for props
-- Consistent component signatures
-- Clear prop interface documentation
-- Better IDE autocomplete
+### Types Colocation
+* Feature-specific types live in `@/features/{feature}/types/`.
+* Global types live in `~types/`.
+* Component prop types are defined directly above the component export.
 
-### Basic Pattern
+---
 
-```typescript
-import React from 'react';
+## 2. Server Components (Default)
 
-interface MyComponentProps {
-    /** User ID to display */
-    userId: number;
-    /** Optional callback when action occurs */
-    onAction?: () => void;
+Server Components are the default in Next.js. They run on the server, fetch data directly, and ship zero JavaScript to the client.
+
+### Pattern: Async Server Component
+* Use `async/await` directly in the component signature.
+* Do not use hooks (`useState`, `useEffect`, `useContext`) in Server Components.
+
+```tsx
+import { db } from '@/lib/db';
+import type { Product } from '~types/product';
+import { ProductCard } from './ProductCard';
+
+interface ProductListProps {
+  categoryId: string;
 }
 
-export const MyComponent: React.FC<MyComponentProps> = ({ userId, onAction }) => {
-    return (
-        <div>
-            User: {userId}
-        </div>
-    );
-};
-
-export default MyComponent;
-```
-
-**Key Points:**
-- Props interface defined separately with JSDoc comments
-- `React.FC<Props>` provides type safety
-- Destructure props in parameters
-- Default export at bottom
-
----
-
-## Lazy Loading Pattern
-
-### When to Lazy Load
-
-Lazy load components that are:
-- Heavy (DataGrid, charts, rich text editors)
-- Route-level components
-- Modal/dialog content (not shown initially)
-- Below-the-fold content
-
-### How to Lazy Load
-
-```typescript
-import React from 'react';
-
-// Lazy load heavy component
-const PostDataGrid = React.lazy(() =>
-    import('./grids/PostDataGrid')
-);
-
-// For named exports
-const MyComponent = React.lazy(() =>
-    import('./MyComponent').then(module => ({
-        default: module.MyComponent
-    }))
-);
-```
-
-**Example from PostTable.tsx:**
-
-```typescript
-/**
- * Main post table container component
- */
-import React, { useState, useCallback } from 'react';
-import { Box, Paper } from '@mui/material';
-
-// Lazy load PostDataGrid to optimize bundle size
-const PostDataGrid = React.lazy(() => import('./grids/PostDataGrid'));
-
-import { SuspenseLoader } from '~components/SuspenseLoader';
-
-export const PostTable: React.FC<PostTableProps> = ({ formId }) => {
-    return (
-        <Box>
-            <SuspenseLoader>
-                <PostDataGrid formId={formId} />
-            </SuspenseLoader>
-        </Box>
-    );
-};
-
-export default PostTable;
+export default async function ProductList({ categoryId }: ProductListProps) {
+  const products: Product[] = await db.products.findMany({ where: { categoryId } });
+  
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {products.map(product => (
+        <ProductCard key={product.id} product={product} />
+      ))}
+    </div>
+  );
+}
 ```
 
 ---
 
-## Suspense Boundaries
+## 3. Client Components (`"use client"`)
 
-### SuspenseLoader Component
+Only use `"use client"` when you need browser APIs, interactivity (event listeners), or React state/effects.
 
-**Import:**
-```typescript
-import { SuspenseLoader } from '~components/SuspenseLoader';
-// Or
-import { SuspenseLoader } from '@/components/SuspenseLoader';
-```
+### Pattern: The Interactivity Leaf
+Push `"use client"` down the component tree as far as possible. Instead of making an entire page a Client Component just for one togglable dropdown, isolate the dropdown.
 
-**Usage:**
-```typescript
-<SuspenseLoader>
-    <LazyLoadedComponent />
-</SuspenseLoader>
-```
+### Component Structure Order (Client Components)
+1. Types / Props
+2. Hooks & State
+3. Derived values (`useMemo`, simple variables)
+4. Handlers
+5. Render return
 
-**What it does:**
-- Shows loading indicator while lazy component loads
-- Smooth fade-in animation
-- Consistent loading experience
-- Prevents layout shift
+```tsx
+'use client';
 
-### Where to Place Suspense Boundaries
+import { useState } from 'react';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-**Route Level:**
-```typescript
-// routes/my-route/index.tsx
-const MyPage = lazy(() => import('@/features/my-feature/components/MyPage'));
-
-function Route() {
-    return (
-        <SuspenseLoader>
-            <MyPage />
-        </SuspenseLoader>
-    );
-}
-```
-
-**Component Level:**
-```typescript
-function ParentComponent() {
-    return (
-        <Box>
-            <Header />
-            <SuspenseLoader>
-                <HeavyDataGrid />
-            </SuspenseLoader>
-        </Box>
-    );
-}
-```
-
-**Multiple Boundaries:**
-```typescript
-function Page() {
-    return (
-        <Box>
-            <SuspenseLoader>
-                <HeaderSection />
-            </SuspenseLoader>
-
-            <SuspenseLoader>
-                <MainContent />
-            </SuspenseLoader>
-
-            <SuspenseLoader>
-                <Sidebar />
-            </SuspenseLoader>
-        </Box>
-    );
-}
-```
-
-Each section loads independently, better UX.
-
----
-
-## Component Structure Template
-
-### Recommended Order
-
-```typescript
-/**
- * Component description
- * What it does, when to use it
- */
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Box, Paper, Button } from '@mui/material';
-import type { SxProps, Theme } from '@mui/material';
-import { useSuspenseQuery } from '@tanstack/react-query';
-
-// Feature imports
-import { myFeatureApi } from '../api/myFeatureApi';
-import type { MyData } from '~types/myData';
-
-// Component imports
-import { SuspenseLoader } from '~components/SuspenseLoader';
-
-// Hooks
-import { useAuth } from '@/hooks/useAuth';
-import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
-
-// 1. PROPS INTERFACE (with JSDoc)
-interface MyComponentProps {
-    /** The ID of the entity to display */
-    entityId: number;
-    /** Optional callback when action completes */
-    onComplete?: () => void;
-    /** Display mode */
-    mode?: 'view' | 'edit';
+interface ExpandableTextProps {
+  children: React.ReactNode;
+  maxLines?: number;
+  className?: string;
 }
 
-// 2. STYLES (if inline and <100 lines)
-const componentStyles: Record<string, SxProps<Theme>> = {
-    container: {
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-    },
-    header: {
-        mb: 2,
-        display: 'flex',
-        justifyContent: 'space-between',
-    },
-};
+export function ExpandableText({ children, maxLines = 3, className }: ExpandableTextProps) {
+  const [expanded, setExpanded] = useState(false);
 
-// 3. COMPONENT DEFINITION
-export const MyComponent: React.FC<MyComponentProps> = ({
-    entityId,
-    onComplete,
-    mode = 'view',
-}) => {
-    // 4. HOOKS (in this order)
-    // - Context hooks first
-    const { user } = useAuth();
-    const { showSuccess, showError } = useMuiSnackbar();
-
-    // - Data fetching
-    const { data } = useSuspenseQuery({
-        queryKey: ['myEntity', entityId],
-        queryFn: () => myFeatureApi.getEntity(entityId),
-    });
-
-    // - Local state
-    const [selectedItem, setSelectedItem] = useState<string | null>(null);
-    const [isEditing, setIsEditing] = useState(mode === 'edit');
-
-    // - Memoized values
-    const filteredData = useMemo(() => {
-        return data.filter(item => item.active);
-    }, [data]);
-
-    // - Effects
-    useEffect(() => {
-        // Setup
-        return () => {
-            // Cleanup
-        };
-    }, []);
-
-    // 5. EVENT HANDLERS (with useCallback)
-    const handleItemSelect = useCallback((itemId: string) => {
-        setSelectedItem(itemId);
-    }, []);
-
-    const handleSave = useCallback(async () => {
-        try {
-            await myFeatureApi.updateEntity(entityId, { /* data */ });
-            showSuccess('Entity updated successfully');
-            onComplete?.();
-        } catch (error) {
-            showError('Failed to update entity');
-        }
-    }, [entityId, onComplete, showSuccess, showError]);
-
-    // 6. RENDER
-    return (
-        <Box sx={componentStyles.container}>
-            <Box sx={componentStyles.header}>
-                <h2>My Component</h2>
-                <Button onClick={handleSave}>Save</Button>
-            </Box>
-
-            <Paper sx={{ p: 2 }}>
-                {filteredData.map(item => (
-                    <div key={item.id}>{item.name}</div>
-                ))}
-            </Paper>
-        </Box>
-    );
-};
-
-// 7. EXPORT (default export at bottom)
-export default MyComponent;
+  return (
+    <div className={twMerge(clsx('text-gray-800', className))}>
+      <div className={clsx(!expanded && `line-clamp-${maxLines}`)}>
+        {children}
+      </div>
+      <button 
+        onClick={() => setExpanded(!expanded)} 
+        className="text-black font-semibold uppercase text-xs mt-2 hover:underline"
+      >
+        {expanded ? 'Read Less' : 'Read More'}
+      </button>
+    </div>
+  );
+}
 ```
 
 ---
 
-## Component Separation
+## 4. The `children` Prop (Composition)
 
-### When to Split Components
+Use the `children` prop heavily. This pattern is crucial in App Router to pass unwrappable Server Components into Client Component shells, bypassing serialization errors.
 
-**Split into multiple components when:**
-- Component exceeds 300 lines
-- Multiple distinct responsibilities
-- Reusable sections
-- Complex nested JSX
+```tsx
+// 🟢 Good: Server Component passes children to Client Shell
+// /app/layout.tsx
+import { ClientSidebarMenu } from '@/components/ClientSidebarMenu';
+import { ServerSideNavLinks } from '@/components/ServerSideNavLinks';
 
-**Example:**
-
-```typescript
-// ❌ AVOID - Monolithic
-function MassiveComponent() {
-    // 500+ lines
-    // Search logic
-    // Filter logic
-    // Grid logic
-    // Action panel logic
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ClientSidebarMenu>
+      <ServerSideNavLinks /> {/* Evaluated on server, passed to client shell */}
+    </ClientSidebarMenu>
+  );
 }
-
-// ✅ PREFERRED - Modular
-function ParentContainer() {
-    return (
-        <Box>
-            <SearchAndFilter onFilter={handleFilter} />
-            <DataGrid data={filteredData} />
-            <ActionPanel onAction={handleAction} />
-        </Box>
-    );
-}
-```
-
-### When to Keep Together
-
-**Keep in same file when:**
-- Component < 200 lines
-- Tightly coupled logic
-- Not reusable elsewhere
-- Simple presentation component
-
----
-
-## Export Patterns
-
-### Named Const + Default Export (PREFERRED)
-
-```typescript
-export const MyComponent: React.FC<Props> = ({ ... }) => {
-    // Component logic
-};
-
-export default MyComponent;
-```
-
-**Why:**
-- Named export for testing/refactoring
-- Default export for lazy loading convenience
-- Both options available to consumers
-
-### Lazy Loading Named Exports
-
-```typescript
-const MyComponent = React.lazy(() =>
-    import('./MyComponent').then(module => ({
-        default: module.MyComponent
-    }))
-);
 ```
 
 ---
 
-## Component Communication
+## 5. Prop Types
 
-### Props Down, Events Up
+* Always type props explicitly with an `interface` named `{ComponentName}Props`.
+* Prefer `React.ReactNode` for `children` types.
+* Avoid `React.FC` or `React.FunctionComponent`; define the component as a standard function (it handles generics better and allows `async` types cleanly in Next.js).
 
-```typescript
-// Parent
-function Parent() {
-    const [selectedId, setSelectedId] = useState<string | null>(null);
-
-    return (
-        <Child
-            data={data}                    // Props down
-            onSelect={setSelectedId}       // Events up
-        />
-    );
+```tsx
+// 🟢 Good
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary';
+  isLoading?: boolean;
 }
 
-// Child
-interface ChildProps {
-    data: Data[];
-    onSelect: (id: string) => void;
+export function Button({ variant = 'primary', isLoading, children, className, ...props }: ButtonProps) {
+  return <button className={/* ... */} {...props}>{children}</button>;
 }
 
-export const Child: React.FC<ChildProps> = ({ data, onSelect }) => {
-    return (
-        <div onClick={() => onSelect(data[0].id)}>
-            {/* Content */}
-        </div>
-    );
+// ❌ Bad (React.FC hides implicit typing and conflicts with async Server Components)
+export const Button: React.FC<ButtonProps> = ({ children }) => {
+  return <button>{children}</button>;
 };
 ```
-
-### Avoid Prop Drilling
-
-**Use context for deep nesting:**
-```typescript
-// ❌ AVOID - Prop drilling 5+ levels
-<A prop={x}>
-  <B prop={x}>
-    <C prop={x}>
-      <D prop={x}>
-        <E prop={x} />  // Finally uses it here
-      </D>
-    </C>
-  </B>
-</A>
-
-// ✅ PREFERRED - Context or TanStack Query
-const MyContext = createContext<MyData | null>(null);
-
-function Provider({ children }) {
-    const { data } = useSuspenseQuery({ ... });
-    return <MyContext.Provider value={data}>{children}</MyContext.Provider>;
-}
-
-function DeepChild() {
-    const data = useContext(MyContext);
-    // Use data directly
-}
-```
-
----
-
-## Advanced Patterns
-
-### Compound Components
-
-```typescript
-// Card.tsx
-export const Card: React.FC<CardProps> & {
-    Header: typeof CardHeader;
-    Body: typeof CardBody;
-    Footer: typeof CardFooter;
-} = ({ children }) => {
-    return <Paper>{children}</Paper>;
-};
-
-Card.Header = CardHeader;
-Card.Body = CardBody;
-Card.Footer = CardFooter;
-
-// Usage
-<Card>
-    <Card.Header>Title</Card.Header>
-    <Card.Body>Content</Card.Body>
-    <Card.Footer>Actions</Card.Footer>
-</Card>
-```
-
-### Render Props (Rare, but useful)
-
-```typescript
-interface DataProviderProps {
-    children: (data: Data) => React.ReactNode;
-}
-
-export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
-    const { data } = useSuspenseQuery({ ... });
-    return <>{children(data)}</>;
-};
-
-// Usage
-<DataProvider>
-    {(data) => <Display data={data} />}
-</DataProvider>
-```
-
----
-
-## Summary
-
-**Modern Component Recipe:**
-1. `React.FC<Props>` with TypeScript
-2. Lazy load if heavy: `React.lazy(() => import())`
-3. Wrap in `<SuspenseLoader>` for loading
-4. Use `useSuspenseQuery` for data
-5. Import aliases (@/, ~types, ~components)
-6. Event handlers with `useCallback`
-7. Default export at bottom
-8. No early returns for loading states
-
-**See Also:**
-- [data-fetching.md](data-fetching.md) - useSuspenseQuery details
-- [loading-and-error-states.md](loading-and-error-states.md) - Suspense best practices
-- [complete-examples.md](complete-examples.md) - Full working examples

@@ -1,6 +1,6 @@
-import Hero from '@/components/home/Hero';
-import ProductRow from '@/components/home/ProductRow';
-import PaymentBanner from '@/components/home/PaymentBanner';
+import Hero from '@/features/home/components/Hero';
+import ProductRow from '@/features/products/components/ProductRow';
+import PaymentBanner from '@/features/home/components/PaymentBanner';
 import { getProductsByCategory } from '@/lib/data';
 
 export default function Home() {

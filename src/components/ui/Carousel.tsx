@@ -1,15 +1,11 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
+import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { clsx, type ClassValue } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+import { cn } from '@/lib/utils';
 
 export interface CarouselItem {
   id: number | string;
@@ -36,7 +32,7 @@ export default function Carousel({
   autoplay = false,
   autoplayDelay = 4000,
   loop = true,
-  className
+  className,
 }: CarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop, align: isHero ? 'center' : 'start', containScroll: 'trimSnaps' },
@@ -64,51 +60,62 @@ export default function Carousel({
   const scrollTo = useCallback((index: number) => emblaApi && emblaApi.scrollTo(index), [emblaApi]);
 
   return (
-    <div className={cn("relative group w-full", className)}>
+    <div className={cn('relative group w-full', className)}>
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
-          {items.map((item, index) => (
+          {items.map((item) => (
             <div
               key={item.id}
               className={cn(
-                "relative flex-[0_0_100%] min-w-0 transition-opacity duration-500",
-                !isHero && "md:flex-[0_0_33.33%] lg:flex-[0_0_25%] px-2"
+                'relative flex-[0_0_100%] min-w-0 transition-opacity duration-500',
+                !isHero && 'md:flex-[0_0_33.33%] lg:flex-[0_0_25%] px-2'
               )}
             >
               <div
                 className={cn(
-                  "relative overflow-hidden",
-                  isHero ? "h-[80vh] w-full" : "aspect-[4/5] rounded-xl border border-gray-100 bg-white"
+                  'relative overflow-hidden',
+                  isHero ? 'h-[80vh] w-full' : 'aspect-[4/5] rounded-xl border border-gray-100 bg-white'
                 )}
               >
-                {/* Image / Background */}
+                {/* Image */}
                 {item.image ? (
-                  <div
-                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover/item:scale-105"
-                    style={{ backgroundImage: `url(${item.image})` }}
+                  <Image
+                    src={item.image}
+                    alt={item.title}
+                    fill
+                    className={cn(
+                      'object-cover transition-transform duration-700',
+                      !isHero && 'group-hover/item:scale-105'
+                    )}
+                    sizes={isHero ? '100vw' : '(max-width: 768px) 100vw, (max-width: 1024px) 33vw, 25vw'}
+                    priority={isHero}
                   />
                 ) : (
-                  <div className={cn(
-                    "absolute inset-0 bg-gradient-to-br",
-                    isHero ? "from-gray-900 to-black" : "from-gray-50 to-gray-100"
-                  )} />
+                  <div
+                    className={cn(
+                      'absolute inset-0 bg-gradient-to-br',
+                      isHero ? 'from-gray-900 to-black' : 'from-gray-50 to-gray-100'
+                    )}
+                  />
                 )}
 
                 {/* Content Overlay */}
-                <div className={cn(
-                  "relative z-10 w-full h-full flex flex-col",
-                  isHero ? "p-12 md:p-24 justify-center text-white" : "p-6 justify-end text-black"
-                )}>
-                  {/* Hero Gradient Overlay */}
-                  {isHero && (
-                    <div className="absolute inset-0 z-[-1] bg-black/40" />
+                <div
+                  className={cn(
+                    'relative z-10 w-full h-full flex flex-col',
+                    isHero ? 'p-6 md:p-12 lg:p-24 justify-center text-white' : 'p-4 md:p-6 justify-end text-black'
                   )}
+                >
+                  {/* Hero Gradient Overlay */}
+                  {isHero && <div className="absolute inset-0 z-[-1] bg-black/40" />}
 
                   {item.badge && (
-                    <span className={cn(
-                      "inline-block px-3 py-1 text-[10px] font-black uppercase tracking-widest w-fit mb-4",
-                      isHero ? "bg-white text-black" : "bg-black text-white"
-                    )}>
+                    <span
+                      className={cn(
+                        'inline-block px-3 py-1 text-[10px] font-black uppercase tracking-widest w-fit mb-3 md:mb-4',
+                        isHero ? 'bg-white text-black' : 'bg-black text-white'
+                      )}
+                    >
                       {item.badge}
                     </span>
                   )}
@@ -121,27 +128,33 @@ export default function Carousel({
                     </div>
                   )}
 
-                  <div className={cn(isHero ? "max-w-3xl" : "w-full")}>
-                    <h3 className={cn(
-                      "font-black tracking-tighter uppercase",
-                      isHero ? "text-4xl md:text-7xl mb-4" : "text-xl mb-1"
-                    )}>
+                  <div className={cn(isHero ? 'max-w-3xl' : 'w-full')}>
+                    <h3
+                      className={cn(
+                        'font-black tracking-tighter uppercase',
+                        isHero ? 'text-3xl md:text-5xl lg:text-7xl mb-3 md:mb-4' : 'text-lg md:text-xl mb-1'
+                      )}
+                    >
                       {item.title}
                     </h3>
-                    <p className={cn(
-                      "font-medium",
-                      isHero ? "text-lg md:text-xl text-gray-200 mb-8" : "text-sm text-gray-500"
-                    )}>
+                    <p
+                      className={cn(
+                        'font-medium',
+                        isHero ? 'text-base md:text-lg lg:text-xl text-gray-200 mb-6 md:mb-8' : 'text-xs md:text-sm text-gray-500'
+                      )}
+                    >
                       {item.description}
                     </p>
 
                     {item.cta && (
-                      <button className={cn(
-                        "mt-4 px-8 py-3 text-xs font-bold uppercase tracking-widest transition-all",
-                        isHero
-                          ? "bg-white text-black hover:bg-gray-200"
-                          : "border border-black text-black hover:bg-black hover:text-white"
-                      )}>
+                      <button
+                        className={cn(
+                          'mt-3 md:mt-4 px-6 md:px-8 py-2 md:py-3 text-xs font-bold uppercase tracking-widest transition-all',
+                          isHero
+                            ? 'bg-white text-black hover:bg-gray-200'
+                            : 'border border-black text-black hover:bg-black hover:text-white'
+                        )}
+                      >
                         {item.cta}
                       </button>
                     )}
@@ -156,37 +169,42 @@ export default function Carousel({
       {/* Navigation Buttons */}
       <button
         onClick={scrollPrev}
+        aria-label="Previous slide"
         className={cn(
-          "absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 transition-opacity opacity-0 group-hover:opacity-100",
-          !isHero && "text-black bg-white/80 border-gray-200"
+          'absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 transition-opacity opacity-0 group-hover:opacity-100',
+          !isHero && 'text-black bg-white/80 border-gray-200'
         )}
       >
         <ChevronLeft size={24} />
       </button>
       <button
         onClick={scrollNext}
+        aria-label="Next slide"
         className={cn(
-          "absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 transition-opacity opacity-0 group-hover:opacity-100",
-          !isHero && "text-black bg-white/80 border-gray-200"
+          'absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/20 transition-opacity opacity-0 group-hover:opacity-100',
+          !isHero && 'text-black bg-white/80 border-gray-200'
         )}
       >
         <ChevronRight size={24} />
       </button>
 
       {/* Pagination Dots */}
-      <div className={cn(
-        "absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex space-x-3",
-        !isHero && "bottom-[-2rem]"
-      )}>
+      <div
+        className={cn(
+          'absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 z-20 flex space-x-3',
+          !isHero && 'bottom-[-2rem]'
+        )}
+      >
         {scrollSnaps.map((_, index) => (
           <button
             key={index}
             onClick={() => scrollTo(index)}
+            aria-label={`Go to slide ${index + 1}`}
             className={cn(
-              "h-1 transition-all duration-300",
-              selectedIndex === index 
-                ? cn("w-8", isHero ? "bg-white" : "bg-black") 
-                : cn("w-4", isHero ? "bg-white/30" : "bg-gray-200")
+              'h-1 transition-all duration-300',
+              selectedIndex === index
+                ? cn('w-8', isHero ? 'bg-white' : 'bg-black')
+                : cn('w-4', isHero ? 'bg-white/30' : 'bg-gray-200')
             )}
           />
         ))}
