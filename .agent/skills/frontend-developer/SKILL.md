@@ -188,6 +188,7 @@ Always wrapped in `<SuspenseLoader>`.
 * Folder-based routing only
 * Lazy load route components
 * Breadcrumb metadata via loaders
+* **Category Routing**: All category pages must be routed via search parameters: `/categories?q={categoryname}` (do not use path parameters like `/categories/$categoryname`).
 
 ```ts
 export const Route = createFileRoute('/my-route/')({

@@ -19,10 +19,10 @@ export default function Navbar() {
           </span>
         </Link>
         <nav className="hidden md:flex items-center gap-8">
-          <Link href="/products" className="text-sm font-semibold uppercase tracking-widest hover:text-zinc-500 transition-colors">
+          <Link href="/products" className="text-sm font-bold uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
             Catálogo
           </Link>
-          <Link href="/contact" className="text-sm font-semibold uppercase tracking-widest hover:text-zinc-500 transition-colors">
+          <Link href="/contact" className="text-sm font-bold uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
             Ubicaciones
           </Link>
         </nav>

@@ -88,6 +88,7 @@ Keep shadows extremely subtle or avoid them in favor of borders for the minimali
 - **Visual Balance**: Use whitespace generously. High-end brands thrive on "breathing room".
 - **Interactions**: Ensure snappy hover effects (`hover:opacity-80`, `hover:scale-[1.01]`, etc.).
 - **Consistency**: Do not introduce colors outside the palette unless specifically required for functional feedback (success/error).
+- **Category Navigation**: When designing category links or pages, note that all categories are placed under the route `/categories?q={categoryname}`.
 
 ## Output (exact format)
 Provide design specifications, component code (using Tailwind classes), or structural layout. Include explicit references to Tailwind classes used. If generating code, ensure it adheres to a utility-first approach and avoids long inline styles in favor of clean class compositions.
