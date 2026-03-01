@@ -1,0 +1,58 @@
+import { notFound } from 'next/navigation';
+import { ShoppingBag } from 'lucide-react';
+import { PRODUCTS } from '@/lib/data';
+
+export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const product = PRODUCTS.find(p => p.id === id);
+
+  if (!product) {
+    notFound();
+  }
+
+  // Pre-fill a WhatsApp message
+  const whatsappMsg = encodeURIComponent(`Hola, estoy interesado en el producto: ${product.title} (${product.price}). ¿Tienen disponibilidad?`);
+  const whatsappUrl = `https://wa.me/5804121833072?text=${whatsappMsg}`;
+
+  return (
+    <div className="container mx-auto px-4 py-16 flex-1">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
+        {/* Product Image */}
+        <div className="relative aspect-square bg-zinc-50 border border-zinc-200">
+          <img 
+            src={product.image} 
+            alt={product.title} 
+            className="w-full h-full object-cover mix-blend-multiply"
+          />
+        </div>
+
+        {/* Product Info */}
+        <div className="flex flex-col justify-center">
+          <span className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-4">{product.category}</span>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-black mb-6 uppercase">{product.title}</h1>
+          <p className="text-3xl text-black mb-8">{product.price}</p>
+          
+          <p className="text-lg text-zinc-700 leading-relaxed mb-12">
+            {product.description}
+          </p>
+
+          <a 
+            href={whatsappUrl} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="w-full bg-black text-white h-14 flex items-center justify-center gap-3 font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors"
+          >
+            <ShoppingBag size={20} />
+            Comprar por WhatsApp
+          </a>
+
+          <div className="mt-12 pt-8 border-t border-zinc-200">
+            <p className="text-sm text-zinc-500 uppercase tracking-widest">
+              Retiro disponible en tiendas
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

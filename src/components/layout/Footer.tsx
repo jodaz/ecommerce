@@ -1,99 +1,52 @@
 import Link from 'next/link';
-import { Instagram, Facebook, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import Image from 'next/image';
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-
   return (
-    <footer className="bg-white border-t border-gray-200 pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-          {/* Productos Column */}
-          <div>
-            <h3 className="text-black font-bold text-sm uppercase tracking-wider mb-4">Productos</h3>
-            <ul className="space-y-2">
-              {[
-                'Congeladores',
-                'Hogar',
-                'Televisores',
-                'Aires Acondicionados',
-                'Neveras',
-                'Lavadoras',
-              ].map((item) => (
-                <li key={item}>
-                  <Link href={`/category/${item.toLowerCase().replace(/\s+/g, '-')}`} className="text-gray-500 hover:text-black text-sm transition-colors">
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+    <footer className="w-full border-t border-zinc-200 bg-zinc-50 py-12">
+      <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8 text-sm">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <Image 
+              src="/LOGO.png" 
+              alt="Mega Import C.A. Logo" 
+              width={120} 
+              height={40} 
+              className="object-contain w-auto h-8"
+            />
+            <span className="text-xl font-bold tracking-tighter uppercase text-black">
+              Mega Import
+            </span>
           </div>
-
-          {/* Políticas Column */}
-          <div>
-            <h3 className="text-black font-bold text-sm uppercase tracking-wider mb-4">Políticas</h3>
-            <ul className="space-y-2">
-              {['Garantía', 'Envíos', 'Términos y Condiciones', 'Privacidad'].map((item) => (
-                <li key={item}>
-                  <Link href={`/${item.toLowerCase().replace(/\s+/g, '-')}`} className="text-gray-500 hover:text-black text-sm transition-colors">
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Tiendas Column */}
-          <div>
-            <h3 className="text-black font-bold text-sm uppercase tracking-wider mb-4">Tiendas</h3>
-            <ul className="space-y-2">
-              {['Caracas', 'Valencia', 'Maracaibo', 'Barquisimeto'].map((item) => (
-                <li key={item}>
-                  <Link href={`/tiendas/${item.toLowerCase()}`} className="text-gray-500 hover:text-black text-sm transition-colors">
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Contacto Column */}
-          <div>
-            <h3 className="text-black font-bold text-sm uppercase tracking-wider mb-4">Contacto</h3>
-            <ul className="space-y-4">
-              <li className="flex items-center space-x-3 text-gray-500 text-sm">
-                <Phone size={16} />
-                <span>+58 212 000 0000</span>
-              </li>
-              <li className="flex items-center space-x-3 text-gray-500 text-sm">
-                <Mail size={16} />
-                <span>info@jodaz.com</span>
-              </li>
-              <li className="flex items-start space-x-3 text-gray-500 text-sm">
-                <MapPin size={16} className="mt-0.5" />
-                <span>Av. Principal, Edif. Home Goods, Caracas.</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Social & Legal */}
-        <div className="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <div className="flex space-x-6">
-            <Link href="#" className="text-gray-400 hover:text-black transition-colors">
-              <Instagram size={20} />
-            </Link>
-            <Link href="#" className="text-gray-400 hover:text-black transition-colors">
-              <Facebook size={20} />
-            </Link>
-            <Link href="#" className="text-gray-400 hover:text-black transition-colors">
-              <Twitter size={20} />
-            </Link>
-          </div>
-          <p className="text-gray-400 text-xs">
-            © {currentYear} JODAZ. Todos los derechos reservados.
+          <p className="text-zinc-500">
+            Tu tienda Mega de confianza. Encuentra los mejores productos y ofertas.
           </p>
         </div>
+        
+        <div className="flex flex-col gap-4">
+          <h3 className="font-bold uppercase tracking-widest text-black">Contacto</h3>
+          <p className="text-zinc-500">
+            WhatsApp: <br />
+            <a href="https://wa.me/5804121833072" className="text-black font-semibold hover:text-zinc-600 transition-colors" target="_blank" rel="noopener noreferrer">
+              +58 0412 1833072
+            </a>
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <h3 className="font-bold uppercase tracking-widest text-black">Enlaces Rápidos</h3>
+          <div className="flex flex-col gap-2">
+            <Link href="/products" className="text-zinc-500 hover:text-black transition-colors">
+              Catálogo de Productos
+            </Link>
+            <Link href="/contact" className="text-zinc-500 hover:text-black transition-colors">
+              Nuestras Tiendas
+            </Link>
+          </div>
+        </div>
+      </div>
+      <div className="container mx-auto px-4 mt-12 pt-8 border-t border-zinc-200 text-center text-xs text-zinc-400">
+        &copy; {new Date().getFullYear()} Mega Import C.A. Todos los derechos reservados.
       </div>
     </footer>
   );

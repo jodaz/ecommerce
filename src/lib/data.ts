@@ -1,0 +1,35 @@
+export interface Product {
+  id: string;
+  title: string;
+  category: string;
+  price: string;
+  image: string;
+  description: string;
+}
+
+export const PRODUCTS: Product[] = [
+  { id: '1', title: 'Nevera Bespoke', category: 'Refrigeración', price: '$1,299', image: 'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&q=80&w=600', description: 'Refrigeración inteligente con diseño modular premium para tu cocina moderna.' },
+  { id: '2', title: 'Smart TV Slim 55"', category: 'Entretenimiento', price: '$999', image: 'https://images.unsplash.com/photo-1593784991095-a205039470b6?auto=format&fit=crop&q=80&w=600', description: 'Imágenes vibrantes en formato 4K UHD. Borde ultra fino.' },
+  { id: '3', title: 'Lavadora Front Load 20kg', category: 'Lavandería', price: '$1,099', image: 'https://images.unsplash.com/photo-1545173153-936277343587?auto=format&fit=crop&q=80&w=600', description: 'Alta capacidad, motor Inverter y limpieza al vapor profundo.' },
+  { id: '4', title: 'Congelador Horizontal', category: 'Refrigeración', price: '$499', image: 'https://images.unsplash.com/photo-1536353284924-9220c464e262?auto=format&fit=crop&q=80&w=600', description: 'Doble función para congelar o refrigerar grandes volúmenes.' },
+  { id: '5', title: 'Gaming Pro 50"', category: 'Entretenimiento', price: '$799', image: 'https://images.unsplash.com/photo-1558882224-cca166733315?auto=format&fit=crop&q=80&w=600', description: 'Optimizado para consolas de última generación a 120Hz.' },
+  { id: '6', title: 'Secadora Heat Pump', category: 'Lavandería', price: '$1,199', image: 'https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?auto=format&fit=crop&q=80&w=600', description: 'Máxima eficiencia energética sin comprometer tu ropa.' },
+  { id: '7', title: 'Nevera Side-by-Side', category: 'Refrigeración', price: '$1,599', image: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=600', description: 'Espacio máximo para familias grandes.' },
+  { id: '8', title: 'Cine Lounge 75"', category: 'Entretenimiento', price: '$3,499', image: 'https://images.unsplash.com/photo-1558882224-cca166733315?auto=format&fit=crop&q=80&w=600', description: 'Experiencia inmersiva en pantalla gigante OLED.' },
+  { id: '9', title: 'Twin Wash XL', category: 'Lavandería', price: '$1,899', image: 'https://images.unsplash.com/photo-1517677208171-0bc6725a3e60?auto=format&fit=crop&q=80&w=600', description: 'Doble carga simultánea para optimizar tu tiempo.' }
+];
+
+export function getProductsByCategory() {
+  const grouped = PRODUCTS.reduce((acc, product) => {
+    if (!acc[product.category]) {
+      acc[product.category] = [];
+    }
+    acc[product.category].push({
+      ...product,
+      cta: product.price
+    });
+    return acc;
+  }, {} as Record<string, any[]>);
+  
+  return grouped;
+}
