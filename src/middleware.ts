@@ -17,13 +17,11 @@ export default function middleware(req: NextRequest) {
   // This allows the app to work seamlessly in production and local dev
   const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost';
 
-  // If the host is the root domain, www.rootdomain, empty, or a Vercel deployment URL, 
-  // stay on the main SaaS landing page.
+  // If it's the root domain or www.rootDomain, it's the landing page.
   if (
     !currentHost || 
     currentHost === rootDomain || 
-    currentHost === `www.${rootDomain}` ||
-    currentHost.endsWith('.vercel.app')
+    currentHost === `www.${rootDomain}`
   ) {
     return NextResponse.next();
   }
