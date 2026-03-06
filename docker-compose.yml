@@ -1,0 +1,28 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # These NEXT_PUBLIC_ vars need to be available at BUILD TIME
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+        NEXT_PUBLIC_ROOT_DOMAIN: ${NEXT_PUBLIC_ROOT_DOMAIN}
+    image: ecommerce-saas:latest
+    container_name: ecommerce-saas
+    ports:
+      - "80:3000"
+    environment:
+      # ── Supabase ──────────────────────────────────────────────────
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY}
+
+      # ── Multitenancy ──────────────────────────────────────────────
+      # Set this to the root domain you want to use locally.
+      # Example: "myapp.localhost" or "test.local"
+      NEXT_PUBLIC_ROOT_DOMAIN: ${NEXT_PUBLIC_ROOT_DOMAIN}
+
+      # ── App ───────────────────────────────────────────────────────
+      NODE_ENV: production
+    restart: unless-stopped

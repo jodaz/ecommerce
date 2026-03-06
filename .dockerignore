@@ -1,0 +1,11 @@
+.git
+.gitignore
+.next
+node_modules
+.env.local
+.env*.local
+README.md
+DOCKER_READY.md
+*.md
+.cursorrules
+tsconfig.tsbuildinfo
