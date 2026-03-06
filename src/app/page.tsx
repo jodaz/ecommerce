@@ -5,7 +5,7 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen bg-white text-black">
       <nav className="flex items-center justify-between px-6 py-6 max-w-7xl mx-auto w-full border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold tracking-tight">E-commerce SaaS</span>
+          <span className="text-2xl font-bold tracking-tight">SaaS de Comercio Electrónico</span>
         </div>
       </nav>
 

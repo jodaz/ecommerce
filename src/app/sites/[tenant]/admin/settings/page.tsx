@@ -100,7 +100,7 @@ export default function AdminSettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label htmlFor="instagram" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                <Instagram className="w-4 h-4" /> Instagram URL
+                <Instagram className="w-4 h-4" /> URL de Instagram
               </label>
               <input
                 id="instagram"
@@ -114,7 +114,7 @@ export default function AdminSettingsPage() {
 
             <div className="space-y-2">
               <label htmlFor="facebook" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                <Facebook className="w-4 h-4" /> Facebook URL
+                <Facebook className="w-4 h-4" /> URL de Facebook
               </label>
               <input
                 id="facebook"
@@ -128,7 +128,7 @@ export default function AdminSettingsPage() {
 
             <div className="space-y-2">
               <label htmlFor="tiktok" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                TikTok URL
+                URL de TikTok
               </label>
               <input
                 id="tiktok"
@@ -142,7 +142,7 @@ export default function AdminSettingsPage() {
 
             <div className="space-y-2">
               <label htmlFor="twitter" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                <Twitter className="w-4 h-4" /> X (Twitter) URL
+                <Twitter className="w-4 h-4" /> URL de X (Twitter)
               </label>
               <input
                 id="twitter"

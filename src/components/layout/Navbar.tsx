@@ -27,7 +27,7 @@ export default function Navbar() {
           </Link>
         </nav>
         <div className="flex md:hidden">
-          <span className="text-sm font-bold uppercase">Menu</span>
+          <span className="text-sm font-bold uppercase">Menú</span>
         </div>
       </div>
     </header>

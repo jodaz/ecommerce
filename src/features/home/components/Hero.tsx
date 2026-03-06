@@ -29,9 +29,14 @@ const HERO_ITEMS: CarouselItem[] = [
   }
 ];
 
-export default function Hero() {
+export default function Hero({ storeName }: { storeName?: string }) {
   return (
     <section className="relative w-full h-[80vh] mt-16 overflow-hidden bg-black">
+      {storeName && (
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-20 text-white text-center">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter mix-blend-difference">{storeName}</h1>
+        </div>
+      )}
       <Carousel 
         items={HERO_ITEMS} 
         isHero={true} 

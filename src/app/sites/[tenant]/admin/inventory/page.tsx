@@ -53,7 +53,7 @@ export default function AdminInventoryPage() {
         <table className="w-full text-left text-sm whitespace-nowrap">
           <thead className="border-b border-zinc-200 bg-zinc-50 uppercase tracking-widest text-xs font-semibold text-zinc-500">
             <tr>
-              <th className="px-6 py-4 w-16">Img</th>
+              <th className="px-6 py-4 w-16">Imagen</th>
               <th className="px-6 py-4">Producto</th>
               <th className="px-6 py-4">Categorías</th>
               <th className="px-6 py-4">Stock</th>
