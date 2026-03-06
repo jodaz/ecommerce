@@ -1,0 +1,7 @@
+# Instrucciones del Proyecto
+
+- Todo el contenido generado por IA que sea visible para el usuario final (componentes, descripciones, mocks) DEBE estar en Español.
+- Usa pnpm como gestor de paquetes.
+- Usa Supabase para backend y base de datos con Row-Level Security.
+- Usa App Router de Next.js 15+ con Server Components.
+- El proyecto es multitenant. Usa `store_id` para filtrar todas las peticiones de datos de la tienda y aislar a los inquilinos.
