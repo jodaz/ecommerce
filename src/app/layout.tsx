@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -10,8 +8,8 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: "Mega Import C.A.",
-  description: "Minimalist E-commerce Catalog for Mega Import C.A.",
+  title: "Plataforma SaaS de E-commerce",
+  description: "Crea tu propia tienda online en minutos.",
 };
 
 export default function RootLayout({
@@ -24,11 +22,7 @@ export default function RootLayout({
       <body
         className={`${figtree.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
-        <Navbar />
-        <main className="flex-1 flex flex-col">
-          {children}
-        </main>
-        <Footer />
+        {children}
       </body>
     </html>
   );
