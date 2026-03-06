@@ -70,7 +70,7 @@ export default function TermsPage() {
                 <span className="text-emerald-500">5.</span> Uso Aceptable
               </h2>
               <p>
-                Te comprometes a no utilizar Simpleflow para actividades ilícitas, fraudulentas o que infrinjan los derechos de terceros. Está prohibido:
+                Te comprometes a no utilizar simpleshop para actividades ilícitas, fraudulentas o que infrinjan los derechos de terceros. Está prohibido:
               </p>
               <ul className="list-disc pl-5 mt-4 space-y-2">
                 <li>Vender productos ilegales o regulados sin los permisos correspondientes.</li>
@@ -102,7 +102,7 @@ export default function TermsPage() {
                 <span className="text-emerald-500">8.</span> Limitación de Responsabilidad
               </h2>
               <p>
-                Simpleflow se proporciona &quot;tal cual&quot; y &quot;según disponibilidad&quot;. No garantizamos que el servicio sea ininterrumpido o libre de errores. En ningún caso seremos responsables por daños indirectos, pérdida de beneficios o datos resultantes del uso de nuestra plataforma.
+                simpleshop se proporciona &quot;tal cual&quot; y &quot;según disponibilidad&quot;. No garantizamos que el servicio sea ininterrumpido o libre de errores. En ningún caso seremos responsables por daños indirectos, pérdida de beneficios o datos resultantes del uso de nuestra plataforma.
               </p>
             </section>
 
