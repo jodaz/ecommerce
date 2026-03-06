@@ -10,25 +10,36 @@ export default function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const hostname = req.headers.get("host") || "";
 
-  // For local development, we often see "tenant.localhost:3000"
-  // or just "localhost:3000"
-  const currentHost = hostname
-    .replace(":3000", "")
-    .replace(".localhost", "");
+  // Remove port if it exists (e.g., 'localhost:3000' -> 'localhost')
+  const currentHost = hostname.split(':')[0];
 
-  // If the host is just "localhost", "www", or empty, stay on the main landing page
-  if (!currentHost || currentHost === "localhost" || currentHost === "www") {
+  // Define the base domain of our SaaS (e.g., 'misaas.com' or 'localhost')
+  // This allows the app to work seamlessly in production and local dev
+  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost';
+
+  // If the host is the root domain, www.rootdomain, empty, or a Vercel deployment URL, 
+  // stay on the main SaaS landing page.
+  if (
+    !currentHost || 
+    currentHost === rootDomain || 
+    currentHost === `www.${rootDomain}` ||
+    currentHost.endsWith('.vercel.app')
+  ) {
     return NextResponse.next();
   }
 
-  // Treat the first part of the hostname as the tenant ID
-  const tenantId = currentHost;
+  // Determine the tenant ID
+  let tenantId = currentHost;
+
+  // If the request is a subdomain of our root domain (e.g., tienda.localhost or tienda.misaas.com)
+  // extract just the subdomain name. Otherwise, it will pass the full custom domain (mitienda.com)
+  if (currentHost.endsWith(`.${rootDomain}`)) {
+    tenantId = currentHost.replace(`.${rootDomain}`, '');
+  }
 
   // Build the rewrite URL path carefully
   const path = url.pathname === "/" ? "" : url.pathname;
   const rewritePath = `/sites/${tenantId}${path}`;
-
-  console.log(`Rewriting ${hostname}${url.pathname} to ${rewritePath}`);
 
   return NextResponse.rewrite(new URL(rewritePath, req.url));
 }
