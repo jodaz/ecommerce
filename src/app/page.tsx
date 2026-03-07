@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { Check, ChevronRight, Layout, BarChart3, Globe, CreditCard, ShieldCheck, Settings } from "lucide-react";
+import { Check, ChevronRight, Layout, BarChart3, Globe, CreditCard, ShieldCheck, Settings, ShoppingBag, Package, Paintbrush, Coins, ShoppingCart } from "lucide-react";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "simpleshop | El primer Saas de E-commerce Multi-tenant en Venezuela",
+  description: "Crea tu tienda online en minutos con simpleshop. La plataforma más rápida, segura y escalable para vender en Venezuela.",
+};
 
 export default function LandingPage() {
   return (
@@ -74,42 +80,56 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                icon: <Layout className="w-6 h-6 text-emerald-400" />,
-                title: "Diseño a medida",
-                desc: "Tu tienda, tus reglas. Totalmente personalizable para reflejar tu marca de la mejor manera."
+                icon: <ShoppingBag className="w-6 h-6 text-emerald-400" />,
+                title: "Gestión de Ventas",
+                desc: "Crea y administra tus ventas con facturación integrada.",
+                points: ["Crear y listar ventas", "Modal de factura", "Seguimiento de estado"]
               },
               {
-                icon: <Settings className="w-6 h-6 text-emerald-400" />,
-                title: "Gestión de Ventas",
-                desc: "Control total de tus pedidos e inventario. Todo actualizado en tiempo real sin fricción."
+                icon: <Package className="w-6 h-6 text-emerald-400" />,
+                title: "Control de Inventario",
+                desc: "Gestiona productos y controla el stock de tu negocio.",
+                points: ["Alta de productos", "Movimientos de stock", "Alertas personalizadas"]
+              },
+              {
+                icon: <Paintbrush className="w-6 h-6 text-emerald-400" />,
+                title: "Diseño Web Premium",
+                desc: "Transformamos tu visión en una experiencia digital de alto impacto y conversión.",
+                points: ["UI/UX: Interfaces exclusivas", "Performance Extrema", "Narrativa Visual"]
               },
               {
                 icon: <BarChart3 className="w-6 h-6 text-emerald-400" />,
-                title: "Análisis en Tiempo Real",
-                desc: "Datos clave para decisiones estratégicas. Entiende a tu audiencia y multiplica tus ventas."
+                title: "Dashboard y Reportes",
+                desc: "Visualiza el rendimiento de tu negocio en tiempo real.",
+                points: ["Gráficos de ventas", "Productos top", "Actividades recientes"]
               },
               {
-                icon: <Globe className="w-6 h-6 text-emerald-400" />,
-                title: "Dominio Personalizado",
-                desc: "Tu propia marca, sin subdominios. Posiciona tu negocio con autoridad en la web."
+                icon: <Coins className="w-6 h-6 text-emerald-400" />,
+                title: "Multi-Moneda",
+                desc: "Opera con diferentes monedas y tasas de cambio.",
+                points: ["Moneda principal", "Tasa de cambio", "Conversión automática"]
               },
               {
-                icon: <CreditCard className="w-6 h-6 text-emerald-400" />,
-                title: "Multimoneda",
-                desc: "Acepta pagos en múltiples monedas locales y globales. Abre tu tienda al mercado internacional."
-              },
-              {
-                icon: <ShieldCheck className="w-6 h-6 text-emerald-400" />,
-                title: "Roles y Permisos",
-                desc: "Controla quién accede a qué información. Mantén tu equipo coordinado de forma segura."
+                icon: <ShoppingCart className="w-6 h-6 text-emerald-400" />,
+                title: "E-commerce Integrado",
+                desc: "Crea tu tienda online y recibe pedidos por WhatsApp.",
+                points: ["Catálogos virtuales", "Gestión de pedidos", "Links de pago"]
               }
             ].map((feature, i) => (
-              <div key={i} className="bg-gray-900 border border-gray-800 p-8 rounded-2xl hover:border-emerald-500/30 transition-colors group">
+              <div key={i} className="bg-gray-900 border border-gray-800 p-8 rounded-2xl hover:border-emerald-500/30 transition-colors group flex flex-col h-full">
                 <div className="w-12 h-12 bg-gray-950 border border-gray-800 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-gray-400 leading-relaxed">{feature.desc}</p>
+                <p className="text-gray-400 leading-relaxed mb-6 flex-grow">{feature.desc}</p>
+                <ul className="space-y-2 mt-auto pt-6 border-t border-gray-800">
+                  {feature.points.map((point, j) => (
+                    <li key={j} className="flex items-center gap-2 text-sm text-gray-500">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
           </div>

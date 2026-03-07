@@ -8,8 +8,8 @@ const figtree = Figtree({
 });
 
 export const metadata: Metadata = {
-  title: "Plataforma SaaS de E-commerce",
-  description: "Crea tu propia tienda online en minutos.",
+  title: "simpleshop | Tu tienda online en Venezuela",
+  description: "Crea, gestiona y escala tu negocio digital con simpleshop, la plataforma multi-tenant definitiva.",
 };
 
 export default function RootLayout({
