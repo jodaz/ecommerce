@@ -22,8 +22,10 @@ export function AdminNavbar() {
       {/* Brand Logo & Tabs Group */}
       <div className="flex items-center gap-12 h-full">
         <div className="flex items-center gap-3 text-black">
-          <Store className="w-6 h-6" />
-          <span className="text-lg font-bold tracking-tight uppercase">Mega Import</span>
+          <Store className="w-6 h-6 text-emerald-600" />
+          <span className="text-lg font-bold tracking-tight text-black transition-colors">
+            simple<span className="text-emerald-600 group-hover:text-emerald-500 transition-colors">shop</span>
+          </span>
         </div>
 
         {/* Navigation Tabs */}

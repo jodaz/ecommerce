@@ -10,6 +10,9 @@ const figtree = Figtree({
 export const metadata: Metadata = {
   title: "simpleshop | Tu tienda online en Venezuela",
   description: "Crea, gestiona y escala tu negocio digital con simpleshop, la plataforma multi-tenant definitiva.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

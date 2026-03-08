@@ -28,8 +28,8 @@ export default function AdminSettingsPage() {
   } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      companyName: 'Mega Import',
-      description: 'Tienda Mega Import. Los mejores precios en línea blanca, tecnología y hogar.',
+      companyName: 'simpleshop',
+      description: 'Tienda simpleshop. Los mejores precios en línea blanca, tecnología y hogar.',
       facebook: '',
       instagram: '',
       tiktok: '',

@@ -60,7 +60,7 @@ export default function AdminLoginPage() {
           <div className="w-12 h-12 bg-black flex items-center justify-center text-white">
             <Store className="w-6 h-6" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight uppercase">Mega Import</h1>
+          <h1 className="text-2xl font-bold tracking-tight uppercase">simpleshop</h1>
           <p className="text-zinc-500 text-sm">Ingreso al portal administrativo</p>
         </div>
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check, ChevronRight, Layout, BarChart3, Globe, CreditCard, ShieldCheck, Settings, ShoppingBag, Package, Paintbrush, Coins, ShoppingCart } from "lucide-react";
 import { Metadata } from "next";
+import Image from "next/image";
 
 export const metadata: Metadata = {
   title: "simpleshop | El primer Saas de E-commerce Multi-tenant en Venezuela",
@@ -12,9 +13,20 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen bg-gray-950 text-white font-sans selection:bg-emerald-500/30">
       {/* Navigation */}
       <nav className="flex items-center justify-between px-6 py-6 max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold tracking-tight text-white">simple<span className="text-emerald-500">shop</span></span>
-        </div>
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="relative w-10 h-10 transition-transform group-hover:scale-110">
+            <Image 
+              src="/logo.svg" 
+              alt="simpleshop logo" 
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
+          <span className="text-2xl font-bold tracking-tight text-white transition-colors">
+            simple<span className="text-emerald-500 group-hover:text-emerald-400 transition-colors">shop</span>
+          </span>
+        </Link>
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
           <Link href="#features" className="hover:text-white transition-colors">Características</Link>
           <Link href="#pricing" className="hover:text-white transition-colors">Precios</Link>

@@ -3,8 +3,8 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
 export const metadata: Metadata = {
-  title: "Mega Import C.A.",
-  description: "Catálogo de E-commerce Minimalista para Mega Import C.A.",
+  title: "simpleshop C.A.",
+  description: "Catálogo de E-commerce Minimalista para simpleshop C.A.",
 };
 
 export default function TenantLayout({

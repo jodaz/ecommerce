@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { AdminAuthWrapper } from '@/features/admin/components/AdminAuthWrapper';
 
 export const metadata: Metadata = {
-  title: 'Panel de Administración | Mega Import',
+  title: 'Panel de Administración | simpleshop',
   description: 'Gestión de Inventario y Pedidos',
 };
 

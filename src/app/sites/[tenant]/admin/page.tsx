@@ -6,7 +6,7 @@ export default function AdminDashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Panel de Control</h1>
-        <p className="text-zinc-500 mt-2">Resumen de actividad de Mega Import</p>
+        <p className="text-zinc-500 mt-2">Resumen de actividad de simpleshop</p>
       </div>
 
       {/* KPIs */}
