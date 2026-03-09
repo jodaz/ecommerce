@@ -2,10 +2,11 @@ import Link from "next/link";
 import { Check, ChevronRight, Layout, BarChart3, Globe, CreditCard, ShieldCheck, Settings, ShoppingBag, Package, Paintbrush, Coins, ShoppingCart } from "lucide-react";
 import { Metadata } from "next";
 import Image from "next/image";
+import { FaqAccordion } from "@/components/ui/faq-accordion";
 
 export const metadata: Metadata = {
-  title: "simpleshop | El primer Saas de E-commerce Multi-tenant en Venezuela",
-  description: "Crea tu tienda online en minutos con simpleshop. La plataforma más rápida, segura y escalable para vender en Venezuela.",
+  title: "simpleshop | Gestión Empresarial Completa en Venezuela",
+  description: "Administra ventas, inventario, clientes y finanzas desde una sola plataforma. Control total de tu negocio en tiempo real.",
 };
 
 export default function LandingPage() {
@@ -14,14 +15,8 @@ export default function LandingPage() {
       {/* Navigation */}
       <nav className="flex items-center justify-between px-6 py-6 max-w-7xl mx-auto w-full">
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative w-10 h-10 transition-transform group-hover:scale-110">
-            <Image 
-              src="/logo.svg" 
-              alt="simpleshop logo" 
-              fill
-              className="object-contain"
-              priority
-            />
+          <div className="relative w-10 h-10 transition-transform group-hover:scale-110 flex items-center justify-center bg-emerald-500 rounded-lg">
+            <Layout className="text-white w-6 h-6" />
           </div>
           <span className="text-2xl font-bold tracking-tight text-white transition-colors">
             simple<span className="text-emerald-500 group-hover:text-emerald-400 transition-colors">shop</span>
@@ -29,15 +24,14 @@ export default function LandingPage() {
         </Link>
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
           <Link href="#features" className="hover:text-white transition-colors">Características</Link>
-          <Link href="#pricing" className="hover:text-white transition-colors">Precios</Link>
           <Link href="#faq" className="hover:text-white transition-colors">FAQ</Link>
         </div>
         <div className="flex items-center gap-4">
           <Link 
-            href="#pricing" 
+            href="#cta" 
             className="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]"
           >
-            Ver Planes
+            Saber Más
           </Link>
         </div>
       </nav>
@@ -52,27 +46,17 @@ export default function LandingPage() {
           </div>
           
           <h1 className="text-5xl md:text-7xl font-extrabold mb-8 tracking-tighter leading-tight max-w-4xl mx-auto">
-            El futuro de tu empresa <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600">empieza hoy</span>
+            Digitaliza tu empresa <br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600 italic">hoy</span>
           </h1>
           
           <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto text-gray-400 font-light leading-relaxed">
-            Únete al primer SaaS de E-commerce Multi-tenant en Venezuela y lleva tu negocio al siguiente nivel. Rápido, seguro y escalable.
+            La plataforma de gestión empresarial más completa de Venezuela. Administra ventas, inventario y finanzas en tiempo real.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 relative z-20">
-            <Link 
-              href="#pricing"
-              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-full font-bold text-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] flex items-center justify-center gap-2"
-            >
-              Comienza hoy <ChevronRight className="w-5 h-5" />
-            </Link>
-            <Link 
-              href="https://demo.jodaz.xyz"
-              target="_blank"
-              className="w-full sm:w-auto bg-gray-900 border border-gray-800 hover:bg-gray-800 text-white px-8 py-4 rounded-full font-bold text-lg transition-all flex items-center justify-center"
-            >
-              Ver Demo
-            </Link>
+            <div className="text-white uppercase tracking-[0.3em] font-bold text-2xl py-4">
+              PROXIMAMENTE
+            </div>
           </div>
           
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-sm text-gray-400">
@@ -197,64 +181,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Pricing Section */}
-        <section id="pricing" className="w-full max-w-7xl mx-auto px-6 py-24 relative border-t border-gray-900/50">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">Inversión en tu crecimiento</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto text-lg">Elige el plan que mejor se adapte a tus objetivos comerciales.</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Plan Emprendedor */}
-            <div className="bg-gray-900 border border-gray-800 p-10 rounded-[2rem] relative flex flex-col hover:border-gray-700 transition-colors">
-              <h3 className="text-2xl font-bold mb-2">Emprendedor</h3>
-              <div className="mb-6">
-                <span className="text-5xl font-extrabold">$10</span>
-                <span className="text-gray-400">/ mes</span>
-              </div>
-              <p className="text-gray-400 mb-8 pb-8 border-b border-gray-800 min-h-[5rem]">Perfecto para negocios que están dando sus primeros pasos en el mundo digital.</p>
-              
-              <ul className="flex flex-col gap-4 mb-10 flex-grow">
-                {["Tu propio dominio", "Productos ilimitados", "Soporte por correo y chat", "SSL Incluido", "Personalización básica", "5 Usuarios de equipo", "Pasarela de pagos local"].map((feature, i) => (
-                  <li key={i} className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-emerald-500 shrink-0" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              
-              <Link href="https://wa.me/584121315110?text=Me%20interesa%20el%20plan%20Emprendedor" target="_blank" className="w-full bg-gray-800 hover:bg-gray-700 text-white py-4 rounded-xl font-bold text-center transition-colors">
-                Contactar a Ventas
-              </Link>
-            </div>
-
-            {/* Plan Profesional */}
-            <div className="bg-gray-900 border-2 border-emerald-500 p-10 rounded-[2rem] relative flex flex-col transform md:-translate-y-4 shadow-[0_0_40px_rgba(16,185,129,0.15)]">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-4 py-1 rounded-full text-sm font-bold uppercase tracking-wide">
-                Más popular
-              </div>
-              <h3 className="text-2xl font-bold mb-2">Profesional</h3>
-              <div className="mb-6">
-                <span className="text-5xl font-extrabold">$25</span>
-                <span className="text-gray-400">/ mes</span>
-              </div>
-              <p className="text-gray-400 mb-8 pb-8 border-b border-gray-800 min-h-[5rem]">Para negocios en expansión que necesitan control total y herramientas analíticas.</p>
-              
-              <ul className="flex flex-col gap-4 mb-10 flex-grow">
-                {[<span key="all" className="inline"><strong className="text-white">Todo en Emprendedor, más:</strong></span>, "Análisis avanzado y reportes", "Soporte prioritario 24/7", "Usuarios ilimitados", "Control de Roles y Permisos", "0% Comisión por venta", "API de integraciones"].map((feature, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <Check className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-              
-              <Link href="https://wa.me/584121315110?text=Me%20interesa%20el%20plan%20Profesional" target="_blank" className="w-full bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-xl font-bold text-center transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-                Contactar a Ventas
-              </Link>
-            </div>
-          </div>
-        </section>
+        {/* Pricing Section hidden for release */}
 
         {/* FAQ Section */}
         <section id="faq" className="w-full max-w-3xl mx-auto px-6 py-24 relative border-t border-gray-900/50">
@@ -263,27 +190,7 @@ export default function LandingPage() {
             <p className="text-gray-400 text-lg">Resolvemos tus dudas más frecuentes de forma directa.</p>
           </div>
           
-          <div className="flex flex-col gap-4">
-            {[
-              { q: "¿Cuánto tiempo toma configurar mi tienda?", a: "Literalmente minutos. Nuestra plataforma es plug-and-play. Te registras, configuras tu nombre, colores y listo." },
-              { q: "¿Necesito conocimientos técnicos?", a: "Absolutamente ninguno. Todo se gestiona desde un panel visual intuitivo y muy sencillo de usar." },
-              { q: "¿Puedo usar mi propio dominio?", a: "Sí, todos los planes incluyen la opción de conectar o adquirir tu propio nombre de dominio personalizado." },
-              { q: "¿Qué métodos de pago soportan?", a: "Soportamos las pasarelas de pago más populares de Venezuela, incluyendo Stripe, PayPal, MercadoPago y DLocal." },
-              { q: "¿Puedo cancelar en cualquier momento?", a: "Sí, sin compromisos a largo plazo. Puedes cancelar, mejorar o cambiar tu plan con un par de clics." }
-            ].map((faq, i) => (
-              <details key={i} className="group bg-gray-900 border border-gray-800 rounded-xl overflow-hidden [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex items-center justify-between p-6 font-semibold cursor-pointer text-lg hover:text-emerald-400 transition-colors">
-                  {faq.q}
-                  <span className="transition group-open:rotate-180">
-                    <ChevronRight className="w-5 h-5 text-gray-500" />
-                  </span>
-                </summary>
-                <div className="p-6 pt-0 text-gray-400">
-                  {faq.a}
-                </div>
-              </details>
-            ))}
-          </div>
+          <FaqAccordion />
         </section>
 
         {/* CTA Section */}
@@ -294,14 +201,14 @@ export default function LandingPage() {
             
             <h2 className="text-4xl md:text-6xl font-bold mb-6 relative z-10">Únete a la vanguardia</h2>
             <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto relative z-10">
-              El futuro del comercio electrónico está a un clic de distancia. Abre tu tienda hoy mismo y empieza a vender.
+              Estamos preparando la mejor plataforma para tu negocio. Contáctanos para ser de los primeros en enterarte del lanzamiento.
             </p>
             <Link 
               href="https://wa.me/584121315110?text=Hola,%20quisiera%20más%20información%20sobre%20simpleshop"
               target="_blank"
               className="inline-block bg-white text-black hover:bg-gray-200 px-10 py-5 rounded-full font-bold text-lg transition-all shadow-lg relative z-10"
             >
-              Contactar al equipo de ventas
+              Contactar al equipo
             </Link>
           </div>
         </section>
@@ -328,8 +235,6 @@ export default function LandingPage() {
             <h4 className="font-semibold mb-4 text-white">Producto</h4>
             <ul className="flex flex-col gap-2 text-sm text-gray-500">
               <li><Link href="#features" className="hover:text-emerald-400 transition-colors">Características</Link></li>
-              <li><Link href="#pricing" className="hover:text-emerald-400 transition-colors">Precios</Link></li>
-{/* <li><Link href="#" className="hover:text-emerald-400 transition-colors">Casos de Éxito</Link></li> */}
             </ul>
           </div>
           <div>
