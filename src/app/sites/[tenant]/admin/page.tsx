@@ -1,61 +1,364 @@
-import { ArrowUpRight, ArrowDownRight, Package, ShoppingBag, AlertTriangle } from 'lucide-react';
+import {
+  TrendingUp,
+  Users,
+  DollarSign,
+  ShoppingCart,
+  Calendar,
+  Package,
+  ArrowUpRight,
+  UploadCloud,
+} from 'lucide-react';
 import React from 'react';
 
+// ─── Palette helpers ──────────────────────────────────────────────────────────
+// Primary accent: emerald-600 (#059669) – keeping brand consistency
+// Cards: white with zinc-100 borders, zinc-900 headings, zinc-500 sub-text
+
+// ─── Static mock data ─────────────────────────────────────────────────────────
+const recentOrders = [
+  {
+    id: 'PED-1024',
+    product: 'Macbook Pro',
+    customer: 'Rodney Cannon',
+    email: 'rodney.cannon@gmail.com',
+    shipping: '$18.00',
+    total: '$118.00',
+    status: 'Enviado',
+    statusColor: 'text-emerald-600 bg-emerald-50',
+  },
+  {
+    id: 'PED-1025',
+    product: 'Dell Laptop',
+    customer: 'Mike Franklin',
+    email: 'mike.franklin@gmail.com',
+    shipping: '$28.00',
+    total: '$208.00',
+    status: 'Procesando',
+    statusColor: 'text-amber-600 bg-amber-50',
+  },
+  {
+    id: 'PED-1026',
+    product: 'Macbook Air',
+    customer: 'Louis Franklin',
+    email: 'louis.franklin@gmail.com',
+    shipping: '$18.00',
+    total: '$118.00',
+    status: 'Procesando',
+    statusColor: 'text-amber-600 bg-amber-50',
+  },
+] as const;
+
+const messages = [
+  { name: 'Carlos García',   time: '10m', msg: 'Hola, ¿cuándo llega mi pedido?'            },
+  { name: 'María López',     time: '1h',  msg: 'Gracias por el excelente servicio.'          },
+  { name: 'Daniel Martínez', time: '2h',  msg: 'Quisiera hacer un cambio en mi orden.'      },
+  { name: 'Ana Rodríguez',   time: '3h',  msg: 'El producto llegó en perfectas condiciones.' },
+] as const;
+
+const latestUpdates = [
+  { icon: ShoppingCart,  label: 'Venta item #340-00', amount: '+$890.00', time: '',      accent: true  },
+  { icon: Users,         label: 'Nuevo lead creado',   amount: '',         time: '30 min', accent: false },
+  { icon: ShoppingCart,  label: 'Venta item #360-20', amount: '+$940.00', time: '',      accent: false },
+  { icon: UploadCloud,   label: 'Carga de items completa', amount: '',    time: '45 min', accent: false },
+] as const;
+
+// ─── Mini donut SVG ───────────────────────────────────────────────────────────
+function DonutChart() {
+  // Three segments: 50% (zinc-900), 30% (emerald-600), 20% (emerald-200)
+  const r = 60;
+  const cx = 80;
+  const cy = 80;
+  const circumference = 2 * Math.PI * r;
+
+  const segments = [
+    { pct: 0.50, color: '#18181b', dashOffset: 0 },
+    { pct: 0.30, color: '#059669', dashOffset: circumference * 0.50 },
+    { pct: 0.20, color: '#a7f3d0', dashOffset: circumference * 0.80 },
+  ];
+
+  return (
+    <div className="relative flex items-center justify-center">
+      <svg width="160" height="160" className="-rotate-90">
+        {/* background ring */}
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f4f4f5" strokeWidth="22" />
+        {segments.map((s, i) => (
+          <circle
+            key={i}
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill="none"
+            stroke={s.color}
+            strokeWidth="22"
+            strokeDasharray={`${circumference * s.pct} ${circumference * (1 - s.pct)}`}
+            strokeDashoffset={-s.dashOffset}
+            strokeLinecap="butt"
+          />
+        ))}
+      </svg>
+      {/* Center label */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-2xl font-bold tracking-tight">$85k</span>
+        <span className="text-xs text-zinc-500 font-medium">Total</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Mini sparkline SVG ───────────────────────────────────────────────────────
+function SparklineChart() {
+  // Simple polyline representing monthly income trend
+  const points = [
+    [10,  80],
+    [45,  50],
+    [80,  30],
+    [115, 55],
+    [150, 20],
+    [185, 40],
+  ] as [number, number][];
+
+  const toSvgPoints = (pts: [number, number][]) =>
+    pts.map(([x, y]) => `${x},${y}`).join(' ');
+
+  // Build area fill path
+  const firstX = points[0][0];
+  const lastX  = points[points.length - 1][0];
+  const areaPath = `M${firstX},90 ` + points.map(([x, y]) => `L${x},${y}`).join(' ') + ` L${lastX},90 Z`;
+
+  return (
+    <svg viewBox="0 0 195 90" className="w-full h-28" preserveAspectRatio="none">
+      {/* Area fill */}
+      <path d={areaPath} fill="#d1fae5" opacity="0.5" />
+      {/* Line */}
+      <polyline
+        points={toSvgPoints(points)}
+        fill="none"
+        stroke="#059669"
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {/* Highlight dot at peak */}
+      <circle cx={150} cy={20} r="5" fill="#059669" />
+      <circle cx={150} cy={20} r="9" fill="#059669" opacity="0.2" />
+    </svg>
+  );
+}
+
+// ─── Avatar initials ──────────────────────────────────────────────────────────
+function Avatar({ name }: { name: string }) {
+  const initials = name
+    .split(' ')
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join('');
+  return (
+    <div className="w-9 h-9 rounded-full bg-zinc-200 flex items-center justify-center shrink-0">
+      <span className="text-xs font-bold text-zinc-600">{initials}</span>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function AdminDashboardPage() {
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Panel de Control</h1>
-        <p className="text-zinc-500 mt-2">Resumen de actividad de simpleshop</p>
+    <div className="space-y-6">
+      {/* ── Header ─────────────────────────────────────────────── */}
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm text-zinc-500 font-medium">Bienvenido de nuevo,</p>
+          <h1 className="text-2xl font-bold tracking-tight text-zinc-900">Panel de Control</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-2 text-sm font-medium text-zinc-500 bg-white border border-zinc-200 px-3 py-2 rounded-lg hover:border-zinc-300 transition-colors">
+            <Calendar className="w-4 h-4" />
+            Hoy
+          </button>
+        </div>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {/* ── KPI cards ──────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
-          title="Ventas Hoy"
-          value="$1,240.00"
-          trend="+12%"
-          isPositive={true}
-          icon={<ShoppingBag className="w-5 h-5 text-zinc-500" />}
+          label="Nuevas ventas"
+          value="1.345"
+          delta="+8.2%"
+          positive
+          icon={<TrendingUp className="w-5 h-5 text-zinc-400" />}
         />
         <KpiCard
-          title="Órdenes Pendientes"
-          value="14"
-          trend="-2%"
-          isPositive={false}
-          icon={<Package className="w-5 h-5 text-amber-500" />}
+          label="Nuevos clientes"
+          value="2.890"
+          delta="+3.1%"
+          positive
+          icon={<Users className="w-5 h-5 text-zinc-400" />}
         />
         <KpiCard
-          title="Alertas Stock"
-          value="3"
-          trend="Crítico"
-          isPositive={false}
-          icon={<AlertTriangle className="w-5 h-5 text-red-600" />}
+          label="Ingreso por orden"
+          value="$1,870"
+          delta="+5.4%"
+          positive
+          icon={<DollarSign className="w-5 h-5 text-zinc-400" />}
         />
       </div>
 
-      {/* Charts & Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* ── Middle row: Charts + Right panel ───────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Charts column (2/3) */}
         <div className="lg:col-span-2 space-y-4">
-          <h2 className="text-xl font-bold tracking-tight">Ventas Semanales</h2>
-          <div className="border border-zinc-200 bg-white p-6 h-[400px] flex items-center justify-center">
-            <p className="text-zinc-500 text-sm italic">[Gráfico de Ventas Semanales]</p>
+          {/* Charts row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Income Breakdown (donut) */}
+            <div className="bg-white border border-zinc-200 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-bold text-zinc-900">Desglose de Ingresos</h2>
+                <span className="text-xs text-zinc-400 font-medium flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5" /> Diario
+                </span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-6">
+                <DonutChart />
+                <div className="space-y-2.5 text-sm">
+                  <LegendItem color="bg-zinc-900"   label="Canales Marketing" />
+                  <LegendItem color="bg-emerald-500" label="Canales Offline"   />
+                  <LegendItem color="bg-emerald-200" label="Ventas Directas"   />
+                </div>
+              </div>
+            </div>
+
+            {/* Planned Income (sparkline) */}
+            <div className="bg-white border border-zinc-200 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="text-sm font-bold text-zinc-900">Ingresos Planificados</h2>
+                <Calendar className="w-4 h-4 text-zinc-400" />
+              </div>
+              <SparklineChart />
+              {/* X-axis labels */}
+              <div className="flex justify-between mt-1 text-xs text-zinc-400 font-medium px-1">
+                {['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'].map((m) => (
+                  <span key={m}>{m}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Latest sales table */}
+          <div className="bg-white border border-zinc-200 rounded-xl p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-bold text-zinc-900">Últimas Ventas</h2>
+              <span className="text-xs text-zinc-400 font-medium flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" /> Diario
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-100">
+                    {['Producto', 'Cliente', 'Envío', 'Total', 'Estado'].map((h) => (
+                      <th
+                        key={h}
+                        className="text-left text-xs font-semibold text-zinc-400 uppercase tracking-wider pb-3 pr-4 last:pr-0"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-50">
+                  {recentOrders.map((order) => (
+                    <tr key={order.id}>
+                      <td className="py-3 pr-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-zinc-100 flex items-center justify-center shrink-0">
+                            <Package className="w-4 h-4 text-zinc-500" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-zinc-900">{order.product}</p>
+                            <p className="text-xs text-zinc-400">{order.id}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 pr-4">
+                        <p className="font-medium text-zinc-700">{order.customer}</p>
+                        <p className="text-xs text-zinc-400">{order.email}</p>
+                      </td>
+                      <td className="py-3 pr-4 text-zinc-600">{order.shipping}</td>
+                      <td className="py-3 pr-4 font-semibold text-zinc-900">{order.total}</td>
+                      <td className="py-3">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${order.statusColor}`}>
+                          {order.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-        
+
+        {/* Right panel (1/3) */}
         <div className="space-y-4">
-          <h2 className="text-xl font-bold tracking-tight">Actividad Reciente</h2>
-          <div className="border border-zinc-200 bg-white p-6 h-[400px] overflow-y-auto">
-            <div className="space-y-6">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="w-2 h-2 mt-2 rounded-full bg-black shrink-0" />
-                  <div>
-                    <p className="text-sm font-semibold">Nueva orden #{(1023 + i).toString()}</p>
-                    <p className="text-sm text-zinc-500 mt-1">Hace {i * 12} minutos</p>
+          {/* Messages */}
+          <div className="bg-white border border-zinc-200 rounded-xl p-5">
+            <h2 className="text-sm font-bold text-zinc-900 mb-4">Mensajes</h2>
+            <div className="space-y-3">
+              {messages.map((m, i) => (
+                <div
+                  key={i}
+                  className={`flex items-start gap-3 p-2.5 rounded-lg transition-colors ${
+                    i === 0 ? 'bg-zinc-50 border border-zinc-200' : 'hover:bg-zinc-50'
+                  }`}
+                >
+                  <Avatar name={m.name} />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-zinc-900 truncate">{m.name}</p>
+                      <span className="text-xs text-zinc-400 whitespace-nowrap">{m.time}</span>
+                    </div>
+                    <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed line-clamp-2">{m.msg}</p>
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Latest Updates */}
+          <div className="bg-white border border-zinc-200 rounded-xl p-5">
+            <h2 className="text-sm font-bold text-zinc-900 mb-4">Últimas Actualizaciones</h2>
+            <div className="space-y-2">
+              {latestUpdates.map((u, i) => {
+                const Icon = u.icon;
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-3 p-3 rounded-lg ${
+                      u.accent ? 'bg-zinc-900 text-white' : 'bg-zinc-50 border border-zinc-100'
+                    }`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                        u.accent ? 'bg-white/10' : 'bg-white border border-zinc-200'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 ${u.accent ? 'text-white' : 'text-zinc-600'}`} />
+                    </div>
+                    <p className={`text-xs font-medium flex-1 ${u.accent ? 'text-white' : 'text-zinc-700'}`}>
+                      {u.label}
+                    </p>
+                    {u.amount && (
+                      <span className={`text-xs font-bold ${u.accent ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                        {u.amount}
+                      </span>
+                    )}
+                    {u.time && (
+                      <span className="text-xs text-zinc-400">{u.time}</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -64,32 +367,42 @@ export default function AdminDashboardPage() {
   );
 }
 
+// ─── Sub-components ───────────────────────────────────────────────────────────
 function KpiCard({
-  title,
+  label,
   value,
-  trend,
-  isPositive,
-  icon
+  delta,
+  positive,
+  icon,
 }: {
-  title: string;
+  label: string;
   value: string;
-  trend: string;
-  isPositive: boolean;
+  delta: string;
+  positive: boolean;
   icon: React.ReactNode;
 }) {
   return (
-    <div className="border border-zinc-200 bg-white p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold uppercase tracking-widest text-zinc-500">{title}</h3>
-        {icon}
-      </div>
-      <div className="flex items-end justify-between">
-        <span className="text-4xl font-bold tracking-tight">{value}</span>
-        <div className={`flex items-center text-sm font-medium ${isPositive ? 'text-emerald-600' : 'text-zinc-500'}`}>
-          {isPositive ? <ArrowUpRight className="w-4 h-4 mr-1" /> : <ArrowDownRight className="w-4 h-4 mr-1" />}
-          {trend}
+    <div className="bg-white border border-zinc-200 rounded-xl p-5">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">{label}</p>
+        <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center">
+          {icon}
         </div>
       </div>
+      <p className="text-3xl font-bold tracking-tight text-zinc-900">{value}</p>
+      <div className={`flex items-center gap-1 mt-2 text-xs font-semibold ${positive ? 'text-emerald-600' : 'text-red-500'}`}>
+        <ArrowUpRight className="w-3.5 h-3.5" />
+        {delta} vs ayer
+      </div>
+    </div>
+  );
+}
+
+function LegendItem({ color, label }: { color: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`inline-block w-3 h-3 rounded-sm shrink-0 ${color}`} />
+      <span className="text-xs text-zinc-600 font-medium">{label}</span>
     </div>
   );
 }

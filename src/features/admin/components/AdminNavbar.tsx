@@ -1,68 +1,130 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Store, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard,
+  ShoppingBag,
+  Package,
+  Settings,
+  LogOut,
+  Store,
+  Menu,
+  X,
+  Tag
+} from 'lucide-react';
 import { useAdminStore } from '@/stores/adminStore';
 import { cn } from '@/lib/utils';
 
-export function AdminNavbar() {
-  const pathname = usePathname();
-  const { logout } = useAdminStore();
+const navItems = [
+  { name: 'Dashboard',     path: '/admin',           icon: LayoutDashboard },
+  { name: 'Pedidos',       path: '/admin/orders',    icon: ShoppingBag },
+  { name: 'Inventario',    path: '/admin/inventory', icon: Package },
+  { name: 'Categorías',    path: '/admin/categories',icon: Tag },
+  { name: 'Configuración', path: '/admin/settings',  icon: Settings },
+];
 
-  const navItems = [
-    { name: 'Inicio', path: '/admin' },
-    { name: 'Pedidos', path: '/admin/orders' },
-    { name: 'Inventario', path: '/admin/inventory' },
-    { name: 'Configuración', path: '/admin/settings' },
-  ];
+export function AdminNavbar() {
+  const pathname  = usePathname();
+  const { logout } = useAdminStore();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 bg-white border-b border-zinc-200 z-50 flex items-center px-6 lg:px-8 justify-between">
-      {/* Brand Logo & Tabs Group */}
-      <div className="flex items-center gap-12 h-full">
-        <div className="flex items-center gap-3 text-black">
-          <Store className="w-6 h-6 text-emerald-600" />
-          <span className="text-lg font-bold tracking-tight text-black transition-colors">
-            simple<span className="text-emerald-600 group-hover:text-emerald-500 transition-colors">shop</span>
+    <>
+      {/* Mobile Top Bar */}
+      <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 z-40">
+        <div className="flex items-center gap-2 text-white">
+          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+            <Store className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-base font-bold tracking-tight">
+            simple<span className="text-emerald-400">shop</span>
           </span>
         </div>
+        <button
+          onClick={() => setIsOpen(true)}
+          className="p-2 text-zinc-400 hover:text-white transition-colors"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+      </div>
 
-        {/* Navigation Tabs */}
-        <div className="hidden md:flex items-center gap-8 h-full">
-          {navItems.map((item) => {
-            const isActive = pathname === item.path || (item.path !== '/admin' && pathname?.startsWith(item.path));
+      {/* Mobile Overlay */}
+      {isOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={cn(
+        "fixed inset-y-0 left-0 w-64 md:w-56 bg-zinc-900 text-white flex flex-col z-50 transition-transform duration-300 ease-in-out",
+        isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+      )}>
+        {/* Brand (Desktop) / Mobile Close Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+              <Store className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-base font-bold tracking-tight hidden md:inline-block">
+              simple<span className="text-emerald-400">shop</span>
+            </span>
+            <span className="text-base font-bold tracking-tight md:hidden">
+              Menú
+            </span>
+          </div>
+          <button 
+            className="md:hidden p-2 text-zinc-400 hover:text-white"
+            onClick={() => setIsOpen(false)}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Nav links */}
+        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+          {navItems.map(({ name, path, icon: Icon }) => {
+            const isActive =
+              path === '/admin'
+                ? pathname === path || pathname === path + '/'
+                : pathname?.startsWith(path);
+
             return (
               <Link
-                key={item.path}
-                href={item.path}
+                key={path}
+                href={path}
+                onClick={() => setIsOpen(false)}
                 className={cn(
-                  "relative h-full flex items-center text-sm font-bold uppercase tracking-widest transition-colors",
-                  isActive 
-                    ? "text-black" 
-                    : "text-zinc-500 hover:text-zinc-800"
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
+                  isActive
+                    ? 'bg-white/10 text-white'
+                    : 'text-zinc-400 hover:bg-white/5 hover:text-white',
                 )}
               >
-                {item.name}
+                <Icon className="w-4 h-4 shrink-0" />
+                {name}
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-black" />
+                  <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 )}
               </Link>
             );
           })}
-        </div>
-      </div>
+        </nav>
 
-      {/* Actions */}
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={() => logout()}
-          className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-zinc-500 hover:text-red-600 transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-          <span className="hidden sm:inline">Salir</span>
-        </button>
-      </div>
-    </nav>
+        {/* Footer – logout */}
+        <div className="px-3 py-4 border-t border-zinc-800">
+          <button
+            onClick={() => logout()}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-red-400 transition-colors"
+          >
+            <LogOut className="w-4 h-4 shrink-0" />
+            Cerrar sesión
+          </button>
+        </div>
+      </aside>
+    </>
   );
 }

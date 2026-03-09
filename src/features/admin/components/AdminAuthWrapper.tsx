@@ -23,8 +23,7 @@ export function AdminAuthWrapper({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, pathname, router, mounted]);
 
-  // Prevent hydration errors with Zustand persist
-  if (!mounted) return null; 
+  if (!mounted) return null;
 
   const isLoginPage = pathname === '/admin/login';
 
@@ -32,17 +31,17 @@ export function AdminAuthWrapper({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Double check, do not render dashboard content if not authenticated
   if (!isAuthenticated) return null;
 
   return (
-    <>
+    <div className="flex min-h-screen bg-zinc-100">
       <AdminNavbar />
-      <main className="pt-16 min-h-screen">
-        <div className="max-w-7xl mx-auto p-6 md:p-8">
+      {/* Offset for fixed sidebar on desktop, fixed topbar on mobile */}
+      <main className="flex-1 md:ml-56 pt-16 md:pt-0 min-h-screen overflow-auto">
+        <div className="p-4 md:p-8">
           {children}
         </div>
       </main>
-    </>
+    </div>
   );
 }

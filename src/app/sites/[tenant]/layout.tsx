@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import { TenantLayoutClient } from "./TenantLayoutClient";
 
 export const metadata: Metadata = {
   title: "simpleshop C.A.",
@@ -12,13 +11,5 @@ export default function TenantLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <>
-      <Navbar />
-      <main className="flex-1 flex flex-col">
-        {children}
-      </main>
-      <Footer />
-    </>
-  );
+  return <TenantLayoutClient>{children}</TenantLayoutClient>;
 }

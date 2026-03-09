@@ -357,3 +357,9 @@ Before finalizing code:
 **Status:** Stable, opinionated, and enforceable
 **Intended Use:** Production React codebases with long-term maintenance horizons
 
+
+### API Route Abstraction & Data Fetching
+- **Client vs Server:** Do not query Supabase directly from UI Client Components (`'use client'`). All database read/write operations must be abstracted and routed through Next.js App Router API Routes (`src/app/api/...`).
+- **Fetch Patter:** Client components should use native browser `fetch` (or a data fetching library like `SWR`/`React Query`) pointing to local `/api/*` endpoints. This ensures business logic and strict access controls are handled securely on the server.
+- **Backend Validation:** ALL incoming data and parameters in API Routes MUST be validated securely using Zod before any processing occurs. Never trust frontend validation implicitly.
+- **Error Handling:** API Routes must always return structured JSON error responses (e.g., `NextResponse.json({ error: error.message }, { status: 500 })`). Client-side code must gracefully catch these responses and forward them to the UI/UX Toast system.

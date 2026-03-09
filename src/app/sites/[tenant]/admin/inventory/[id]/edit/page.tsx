@@ -9,7 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useParams } from 'next/navigation';
-import { getStoreByDomain, getCategories, uploadProductImage, createProduct } from '@/lib/api/inventory-client';
+import { getStoreByDomain, getCategories, uploadProductImage, updateProduct, getProduct } from '@/lib/api/inventory-client';
 import { slugify } from '@/lib/utils';
 
 const productSchema = z.object({
@@ -22,8 +22,8 @@ const productSchema = z.object({
 
 type ProductFormValues = z.infer<typeof productSchema>;
 
-export default function CreateProductPage() {
-  const { tenant } = useParams();
+export default function EditProductPage() {
+  const { tenant, id } = useParams();
   const router = useRouter();
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -33,65 +33,72 @@ export default function CreateProductPage() {
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
+  });
+
   useEffect(() => {
     async function loadData() {
       try {
         const store = await getStoreByDomain(tenant as string);
         if (store) {
           setStoreId(store.id);
-          const cats = await getCategories(store.id);
+          const [cats, prod] = await Promise.all([
+            getCategories(store.id),
+            getProduct(id as string)
+          ]);
+          
           setCategories(cats || []);
+          
+          // Set form values
+          if (prod) {
+            setValue('name', prod.name);
+            setValue('description', prod.description || '');
+            setValue('price', Number(prod.price));
+            setValue('stock', prod.stock);
+            setValue('category_id', prod.category_id || '');
+            setImagePreview(prod.image_url);
+          }
         }
       } catch (error) {
-        console.error('Error loading form data:', error);
-        toast.error('Error al cargar datos del formulario');
+        console.error('Error loading product data:', error);
+        toast.error('Error al cargar datos del producto');
       } finally {
         setLoading(false);
       }
     }
     loadData();
-  }, [tenant]);
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: '',
-      description: '',
-      price: 0,
-      stock: 0,
-      category_id: '',
-    },
-  });
+  }, [tenant, id, setValue]);
 
   const onSubmit = async (data: ProductFormValues) => {
     if (!storeId) return;
 
     try {
-      let image_url = null;
+      let image_url = imagePreview;
       if (selectedFile) {
         image_url = await uploadProductImage(selectedFile);
       }
 
       const productData = {
         ...data,
-        store_id: storeId,
         slug: slugify(data.name),
         image_url,
       };
 
-      await createProduct(productData);
+      await updateProduct(id as string, productData);
       
-      toast.success('Producto creado exitosamente', {
+      toast.success('Producto actualizado exitosamente', {
         className: 'bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]',
       });
       router.push('/admin/inventory');
     } catch (error) {
-      console.error('Error saving product:', error);
-      toast.error('Error al guardar el producto');
+      console.error('Error updating product:', error);
+      toast.error('Error al actualizar el producto');
     }
   };
 
@@ -116,7 +123,7 @@ export default function CreateProductPage() {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-zinc-400 gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-black" />
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em]">Cargando...</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.2em]">Cargando Producto...</p>
       </div>
     );
   }
@@ -131,8 +138,8 @@ export default function CreateProductPage() {
           <ChevronLeft className="w-6 h-6" />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight uppercase">Nuevo Producto</h1>
-          <p className="text-zinc-500 mt-1 font-medium tracking-wide text-sm">Define los detalles del nuevo artículo</p>
+          <h1 className="text-3xl font-bold tracking-tight uppercase">Editar Producto</h1>
+          <p className="text-zinc-500 mt-1 font-medium tracking-wide text-sm">Modifica los detalles del artículo</p>
         </div>
       </div>
 
@@ -273,7 +280,7 @@ export default function CreateProductPage() {
             {/* Stock */}
             <div className="space-y-2">
               <label htmlFor="stock" className="block text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
-                Stock Inicial
+                Stock
               </label>
               <div className="relative">
                 <input
@@ -325,7 +332,7 @@ export default function CreateProductPage() {
                   <span>Procesando</span>
                 </>
               ) : (
-                'Guardar Producto'
+                'Actualizar Producto'
               )}
             </button>
           </div>

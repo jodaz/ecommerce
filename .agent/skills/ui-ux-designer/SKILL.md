@@ -32,12 +32,13 @@ You are an expert UI/UX designer specialized in premium, minimalist design syste
 ### 1. Framework & Libraries
 - **Core Library**: **Tailwind CSS v4**. Always leverage utility classes for styling.
 - **Framework**: Built with **Next.js** and **React**.
-- **Icons**: Use `@iconify/react` or `lucide-react`.
-- **Animations**: Use `framer-motion` for complex transitions; `@lottiefiles/dotlottie-react` or `lottie-react` for Lottie.
+- **Icons**: Use `lucide-react` for system icons.
+- **Toasts**: Use `sonner` for all notifications.
+- **Animations**: Use `framer-motion` for smooth transitions and `animate-spin` for loaders.
 
 ### 2. Colors Palette (Black & White Brand)
 The brand is strictly minimalist. Use the following palette based on Tailwind's defaults or exact hex if custom:
-- **Primary**: `black` (`#000000`)
+- **Primary (Background/Toasts)**: `black` (`#000000`)
 - **Secondary**: `white` (`#FFFFFF`)
 - **Neutrals**:
   - `zinc-100` (`#F4F4F5`) - Surface/Background
@@ -84,12 +85,24 @@ Keep shadows extremely subtle or avoid them in favor of borders for the minimali
 - `soft`: `shadow-sm` (subtle elevation).
 - `none`: Use `border` instead of `shadow` for most cards to maintain the clean B&W look.
 
-### 6. General Rules
-- **Contrast**: Maintain AA/AAA WCAG contrast levels (Black/White makes this easy).
+### 6. Feedback & Interactivity
+- **Toasts (sonner)**: All async outcomes (Save, Delete, Error) MUST trigger a toast.
+  - Styling: `className: "bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]"`
+- **Loading Spinners**: Use `Loader2` (lucide-react) with `animate-spin` inside buttons during processing.
+- **Button States**: On form submission, primary buttons MUST:
+  - Disable themselves (`disabled:opacity-50`).
+  - Change text to "PROCESANDO" or "GUARDANDO".
+  - Show a spinner icon.
+
+### 7. General Rules
+- **Contrast**: Maintain AA/AAA WCAG contrast levels.
 - **Visual Balance**: Use whitespace generously. High-end brands thrive on "breathing room".
-- **Interactions**: Ensure snappy hover effects (`hover:opacity-80`, `hover:scale-[1.01]`, etc.).
+- **Interactions**: Ensure snappy hover effects (`hover:scale-[1.02]`,snappy transitions).
 - **Consistency**: Do not introduce colors outside the palette unless specifically required for functional feedback (success/error).
+- **Mobile-First Design**: Tables MUST be converted to Card lists on small screens.
 - **Category Navigation**: When designing category links or pages, note that all categories are placed under the route `/categories?q={categoryname}`.
 
 ## Output (exact format)
 Provide design specifications, component code (using Tailwind classes), or structural layout. Include explicit references to Tailwind classes used. If generating code, ensure it adheres to a utility-first approach and avoids long inline styles in favor of clean class compositions.
+\n### Strict UI Rule: Meaningful Feedback States\n- **Mandatory Feedback Elements:** Every asynchronous user-initiated action (e.g. API requests to create, delete or edit data) MUST trigger visual feedback mechanisms indicating loading process and outcome.\n- **Sonner and Lucide API:** Always wrap responses in robust `sonner` toasts for UI reporting (incorporate both `toast.success` & `toast.error`). Similarly, pair 'in-flight' form disablers with a loading icon representing state accurately (usually `lucide-react`'s `Loader2 animate-spin`).
+\n- **Tailwind Standardization Constraint**: Strictly adhere to conventional sizing and spacing Tailwind CSS utility classes. AVOID arbitrary syntax or non-standard variations (e.g. `w-4.5`) to comply explicitly with the global static rules and prevent underlying Next.js Turbopack `Parsing ecmascript source code failed` parsing bottlenecks during CI/CD or local development initialization. All custom parameters MUST exist directly inside `tailwind.config.ts`.

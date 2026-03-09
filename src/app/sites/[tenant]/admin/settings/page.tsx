@@ -168,62 +168,6 @@ export default function AdminSettingsPage() {
         </div>
       </form>
 
-      {/* Categories CRUD Table */}
-      <div className="space-y-6 bg-white border border-zinc-200 p-6 md:p-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-zinc-200">
-          <h2 className="text-lg font-bold tracking-tight">Categorías</h2>
-          <Link 
-            href="/admin/settings/categories/new"
-            className="bg-black text-white px-6 py-3 text-sm font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors shrink-0"
-          >
-            Nueva Categoría
-          </Link>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-zinc-50 uppercase tracking-widest text-xs font-semibold text-zinc-500">
-              <tr>
-                <th className="px-6 py-4 border-b border-zinc-200">Nombre</th>
-                <th className="px-6 py-4 border-b border-zinc-200">Página Web</th>
-                <th className="px-6 py-4 border-b border-zinc-200 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-200">
-              {categories.map((c) => (
-                <tr key={c.id} className="hover:bg-zinc-50 transition-colors">
-                  <td className="px-6 py-4 font-bold">{c.name}</td>
-                  <td className="px-6 py-4">
-                    {c.has_page ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold text-xs uppercase tracking-widest">
-                        <Check className="w-4 h-4" /> Activa
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 text-zinc-400 font-semibold text-xs uppercase tracking-widest">
-                        <X className="w-4 h-4" /> Oculta
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-3">
-                    <button className="text-zinc-500 hover:text-black transition-colors" title="Editar">
-                      <Pencil className="w-5 h-5 inline-block" />
-                    </button>
-                    <button onClick={() => deleteCategory(c.id)} className="text-zinc-500 hover:text-red-600 transition-colors" title="Eliminar">
-                      <Trash2 className="w-5 h-5 inline-block" />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {categories.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="px-6 py-8 text-center text-zinc-500">No hay categorías registradas</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
       {/* Users CRUD Table */}
       <div className="space-y-6 bg-white border border-zinc-200 p-6 md:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-zinc-200">
