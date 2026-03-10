@@ -27,7 +27,7 @@ export default function LandingPage() {
           </div>
           
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold mb-8 tracking-tighter leading-tight max-w-4xl mx-auto relative z-10">
-            Digitaliza tu empresa <br className="hidden sm:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600 italic">hoy</span>
+            Digitaliza tu empresa <br className="hidden sm:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-emerald-600 italic">¡En minutos!</span>
           </h1>
           
           <p className="text-lg md:text-xl mb-10 max-w-2xl mx-auto text-gray-400 font-light leading-relaxed">
@@ -36,10 +36,18 @@ export default function LandingPage() {
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 relative z-20">
             <Link 
-              href="/onboarding" 
+              href="https://wa.me/584121315110?text=Hola,%20quisiera%20solicitar%20un%20demo%20de%20simpleshop"
+              target="_blank"
               className="bg-white text-black hover:bg-gray-200 px-8 py-4 rounded-full font-bold text-lg transition-all shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] flex items-center gap-2"
             >
-              Comienza gratis
+              Solicitar demo
+            </Link>
+            <Link 
+              href="http://demo.simpleshop.local:3000/admin" 
+              target="_blank"
+              className="bg-transparent border-2 border-gray-700 text-white hover:border-gray-500 hover:bg-gray-800/50 px-8 py-4 rounded-full font-bold text-lg transition-all flex items-center gap-2"
+            >
+              Ver demo
               <ChevronRight className="w-5 h-5" />
             </Link>
           </div>

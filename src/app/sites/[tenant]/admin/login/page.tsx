@@ -157,7 +157,7 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        <div className="mt-8 relative z-10">
+        {/* <div className="mt-8 relative z-10">
           <div className="relative flex items-center mb-8">
             <div className="flex-grow border-t border-gray-800"></div>
             <span className="flex-shrink mx-4 text-xs font-bold uppercase tracking-widest text-gray-600">O ingresar vía</span>
@@ -188,7 +188,7 @@ export default function AdminLoginPage() {
             </svg>
             Google
           </a>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import OnboardingWizard from '@/features/onboarding/components/OnboardingWizard';
 
 export default async function OnboardingPage() {
+  // Hide onboarding for now - navigate to dashboard directly
+  redirect('http://demo.localhost:3000/admin');
+
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 

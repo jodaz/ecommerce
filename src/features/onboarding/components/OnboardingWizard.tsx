@@ -93,6 +93,7 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
           <p className="text-sm font-light text-gray-400">Verifica tu cuenta para asegurar tu negocio</p>
         </div>
 
+        {/*
         <a
           href="/api/auth/google"
           className="w-full h-14 flex items-center justify-center gap-3 border border-gray-700 bg-gray-800/80 text-sm font-bold uppercase tracking-widest text-white hover:bg-gray-800 hover:border-emerald-500/50 transition-all active:scale-[0.98] rounded-xl relative z-10 shadow-lg"
@@ -105,6 +106,7 @@ export default function OnboardingWizard({ initialUser }: OnboardingWizardProps)
           </svg>
           Google
         </a>
+        */}
 
         <div className="mt-8 text-center relative z-10">
            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-light text-gray-500">
