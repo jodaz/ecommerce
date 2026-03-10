@@ -2,7 +2,7 @@
 
 ## 1. Understanding Summary
 
-- **What is being built:** We are integrating the AKomo API (api.akomo.jodaz.xyz) to fetch and store exchange rates (BCV USD/EUR) in our e-commerce database.
+- **What is being built:** We are integrating the AKomo API (api.akomo.xyz) to fetch and store exchange rates (BCV USD/EUR) in our e-commerce database.
 - **Why it exists:** To keep exchange rates synced locally for fast, reliable access across the platform without directly querying the external API on every page load.
 - **Who it is for:** Store administrators and customers (to see prices in local currency).
 - **Key constraints:**
@@ -31,7 +31,7 @@
 ### Phase 2: API Route Creation
 1. Create a Next.js App Router API Route at `src/app/api/cron/sync-exchange-rates/route.ts`.
 2. Implement Authorization: Check the `Authorization` header against `process.env.CRON_SECRET`.
-3. Fetch data from `https://api.akomo.jodaz.xyz/api/exchange-rates`.
+3. Fetch data from `https://api.akomo.xyz/api/exchange-rates`.
 4. Parse the response to extract BCV USD and EUR rates.
 5. Upsert these rates into the `global_exchange_rates` Supabase table using the `@supabase/ssr` or `supabase-js` client with the `SERVICE_ROLE_KEY` to bypass RLS for writing.
 

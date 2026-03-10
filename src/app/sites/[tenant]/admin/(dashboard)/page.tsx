@@ -7,8 +7,10 @@ import {
   Package,
   ArrowUpRight,
   UploadCloud,
+  Euro,
+  ExternalLink,
 } from 'lucide-react';
-import React from 'react';
+import React, { Suspense } from 'react';
 
 // ─── Palette helpers ──────────────────────────────────────────────────────────
 // Primary accent: emerald-600 (#059669) – keeping brand consistency
@@ -178,7 +180,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ── KPI cards ──────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           label="Nuevas ventas"
           value="1.345"
@@ -200,6 +202,9 @@ export default function AdminDashboardPage() {
           positive
           icon={<DollarSign className="w-5 h-5 text-zinc-400" />}
         />
+        <Suspense fallback={<AkomoRatesCardSkeleton />}>
+          <AkomoRatesCard />
+        </Suspense>
       </div>
 
       {/* ── Middle row: Charts + Right panel ───────────────────── */}
@@ -403,6 +408,93 @@ function LegendItem({ color, label }: { color: string; label: string }) {
     <div className="flex items-center gap-2">
       <span className={`inline-block w-3 h-3 rounded-sm shrink-0 ${color}`} />
       <span className="text-xs text-zinc-600 font-medium">{label}</span>
+    </div>
+  );
+}
+
+async function AkomoRatesCard() {
+  let bcvUsd = '---';
+  let bcvEur = '---';
+  let binanceUsdt = '---';
+
+  try {
+    const [bcvRes, usdtRes] = await Promise.all([
+      fetch('https://api.akomo.xyz/api/exchange-rates', { cache: 'no-store' }),
+      fetch('https://api.akomo.xyz/api/exchange-rates/binance/average?asset=USDT&fiat=VES&tradeType=SELL', { cache: 'no-store' })
+    ]);
+
+    if (bcvRes.ok) {
+      const bcvData = await bcvRes.json();
+      const usdRate = bcvData?.rates?.find((r: any) => r.label === 'USD')?.value;
+      const eurRate = bcvData?.rates?.find((r: any) => r.label === 'EUR')?.value;
+      
+      bcvUsd = usdRate ? parseFloat(usdRate.replace(',', '.')).toFixed(4).replace('.', ',') : bcvUsd;
+      bcvEur = eurRate ? parseFloat(eurRate.replace(',', '.')).toFixed(4).replace('.', ',') : bcvEur;
+    }
+    if (usdtRes.ok) {
+      const usdtData = await usdtRes.json();
+      binanceUsdt = usdtData?.average ? parseFloat(usdtData.average).toFixed(4).replace('.', ',') : binanceUsdt;
+    }
+  } catch (error) {
+    console.error('Failed to fetch Akomo rates:', error);
+  }
+
+  return (
+    <div className="bg-white border border-zinc-200 rounded-xl p-5 flex flex-col relative overflow-hidden">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">Tasas de Cambio 🇻🇪</p>
+      </div>
+      
+      <div className="space-y-3 mt-1 flex-1 flex flex-col justify-center mb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-zinc-500">
+            <DollarSign className="w-4 h-4" />
+            <span className="text-sm font-medium">USD BCV</span>
+          </div>
+          <span className="text-sm font-bold text-zinc-900">Bs. {bcvUsd}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-zinc-500">
+            <Euro className="w-4 h-4" />
+            <span className="text-sm font-medium">EUR BCV</span>
+          </div>
+          <span className="text-sm font-bold text-zinc-900">Bs. {bcvEur}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-zinc-500">
+            <span className="text-[10px] font-bold px-1 py-0.5 rounded bg-zinc-100 border border-zinc-200 text-zinc-600">USDT</span>
+            <span className="text-sm font-medium">Binance</span>
+          </div>
+          <span className="text-sm font-bold text-zinc-900">Bs. {binanceUsdt}</span>
+        </div>
+      </div>
+
+      <div className="absolute bottom-[4px] right-3">
+        <a 
+          href="https://akomo.xyz" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="flex items-center gap-1 text-[10px] text-zinc-400 hover:text-emerald-600 transition-colors"
+          title="Powered by Akomo"
+        >
+          Powered by Akomo <ExternalLink className="w-3 h-3" />
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function AkomoRatesCardSkeleton() {
+  return (
+    <div className="bg-white border border-zinc-200 rounded-xl p-5 flex flex-col justify-between items-center animate-pulse min-h-[140px]">
+      <div className="w-full flex items-center justify-between mb-3">
+        <div className="h-4 bg-zinc-200 rounded w-24"></div>
+      </div>
+      <div className="w-full space-y-3 mt-1 mb-4">
+        <div className="h-4 w-full bg-zinc-100 rounded"></div>
+        <div className="h-4 w-full bg-zinc-100 rounded"></div>
+        <div className="h-4 w-full bg-zinc-100 rounded"></div>
+      </div>
     </div>
   );
 }
