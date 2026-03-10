@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import React, { Suspense } from 'react';
 
+import { PriceDisplay } from '@/components/ui/price-display';
+
 // ─── Palette helpers ──────────────────────────────────────────────────────────
 // Primary accent: emerald-600 (#059669) – keeping brand consistency
 // Cards: white with zinc-100 borders, zinc-900 headings, zinc-500 sub-text
@@ -23,8 +25,8 @@ const recentOrders = [
     product: 'Macbook Pro',
     customer: 'Rodney Cannon',
     email: 'rodney.cannon@gmail.com',
-    shipping: '$18.00',
-    total: '$118.00',
+    shipping: 18.00,
+    total: 118.00,
     status: 'Enviado',
     statusColor: 'text-emerald-600 bg-emerald-50',
   },
@@ -33,8 +35,8 @@ const recentOrders = [
     product: 'Dell Laptop',
     customer: 'Mike Franklin',
     email: 'mike.franklin@gmail.com',
-    shipping: '$28.00',
-    total: '$208.00',
+    shipping: 28.00,
+    total: 208.00,
     status: 'Procesando',
     statusColor: 'text-amber-600 bg-amber-50',
   },
@@ -43,8 +45,8 @@ const recentOrders = [
     product: 'Macbook Air',
     customer: 'Louis Franklin',
     email: 'louis.franklin@gmail.com',
-    shipping: '$18.00',
-    total: '$118.00',
+    shipping: 18.00,
+    total: 118.00,
     status: 'Procesando',
     statusColor: 'text-amber-600 bg-amber-50',
   },
@@ -58,14 +60,14 @@ const messages = [
 ] as const;
 
 const latestUpdates = [
-  { icon: ShoppingCart,  label: 'Venta item #340-00', amount: '+$890.00', time: '',      accent: true  },
-  { icon: Users,         label: 'Nuevo lead creado',   amount: '',         time: '30 min', accent: false },
-  { icon: ShoppingCart,  label: 'Venta item #360-20', amount: '+$940.00', time: '',      accent: false },
-  { icon: UploadCloud,   label: 'Carga de items completa', amount: '',    time: '45 min', accent: false },
+  { icon: ShoppingCart,  label: 'Venta item #340-00', amount: 890.00, time: '',      accent: true  },
+  { icon: Users,         label: 'Nuevo lead creado',   amount: 0,         time: '30 min', accent: false },
+  { icon: ShoppingCart,  label: 'Venta item #360-20', amount: 940.00, time: '',      accent: false },
+  { icon: UploadCloud,   label: 'Carga de items completa', amount: 0,    time: '45 min', accent: false },
 ] as const;
 
 // ─── Mini donut SVG ───────────────────────────────────────────────────────────
-function DonutChart() {
+function DonutChart({ rate = 1 }: { rate: number }) {
   // Three segments: 50% (zinc-900), 30% (emerald-600), 20% (emerald-200)
   const r = 60;
   const cx = 80;
@@ -77,6 +79,9 @@ function DonutChart() {
     { pct: 0.30, color: '#059669', dashOffset: circumference * 0.50 },
     { pct: 0.20, color: '#a7f3d0', dashOffset: circumference * 0.80 },
   ];
+
+  const totalUsd = 85000;
+  const totalVes = totalUsd * rate;
 
   return (
     <div className="relative flex items-center justify-center">
@@ -100,8 +105,8 @@ function DonutChart() {
       </svg>
       {/* Center label */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-bold tracking-tight">$85k</span>
-        <span className="text-xs text-zinc-500 font-medium">Total</span>
+        <span className="text-xl font-bold tracking-tight text-zinc-900 leading-none">$85k</span>
+        <span className="text-[10px] font-semibold text-zinc-400 mt-1">Bs. {new Intl.NumberFormat('es-VE').format(Math.round(totalVes/1000))}k</span>
       </div>
     </div>
   );
@@ -162,7 +167,11 @@ function Avatar({ name }: { name: string }) {
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
+  const { getExchangeRates } = await import('@/lib/currency');
+  const rates = await getExchangeRates();
+  const bcvRate = rates?.USD || 1;
+
   return (
     <div className="space-y-6">
       {/* ── Header ─────────────────────────────────────────────── */}
@@ -195,9 +204,10 @@ export default function AdminDashboardPage() {
           positive
           icon={<Users className="w-5 h-5 text-zinc-400" />}
         />
-        <KpiCard
-          label="Ingreso por orden"
-          value="$1,870"
+        <KpiCardAmount
+          label="Ingreso promedio"
+          amountUsd={1870}
+          bcvRate={bcvRate}
           delta="+5.4%"
           positive
           icon={<DollarSign className="w-5 h-5 text-zinc-400" />}
@@ -223,7 +233,7 @@ export default function AdminDashboardPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row items-center gap-6">
-                <DonutChart />
+                <DonutChart rate={bcvRate} />
                 <div className="space-y-2.5 text-sm">
                   <LegendItem color="bg-zinc-900"   label="Canales Marketing" />
                   <LegendItem color="bg-emerald-500" label="Canales Offline"   />
@@ -289,8 +299,16 @@ export default function AdminDashboardPage() {
                         <p className="font-medium text-zinc-700">{order.customer}</p>
                         <p className="text-xs text-zinc-400">{order.email}</p>
                       </td>
-                      <td className="py-3 pr-4 text-zinc-600">{order.shipping}</td>
-                      <td className="py-3 pr-4 font-semibold text-zinc-900">{order.total}</td>
+                      <td className="py-3 pr-4 align-top">
+                        <Suspense fallback={<div className="h-6 w-12 bg-zinc-100 animate-pulse rounded" />}>
+                          <PriceDisplay amount={order.shipping} />
+                        </Suspense>
+                      </td>
+                      <td className="py-3 pr-4 align-top">
+                        <Suspense fallback={<div className="h-6 w-16 bg-zinc-100 animate-pulse rounded" />}>
+                           <PriceDisplay amount={order.total} />
+                        </Suspense>
+                      </td>
                       <td className="py-3">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${order.statusColor}`}>
                           {order.status}
@@ -396,6 +414,47 @@ function KpiCard({
       </div>
       <p className="text-3xl font-bold tracking-tight text-zinc-900">{value}</p>
       <div className={`flex items-center gap-1 mt-2 text-xs font-semibold ${positive ? 'text-emerald-600' : 'text-red-500'}`}>
+        <ArrowUpRight className="w-3.5 h-3.5" />
+        {delta} vs ayer
+      </div>
+    </div>
+  );
+}
+
+function KpiCardAmount({
+  label,
+  amountUsd,
+  bcvRate,
+  delta,
+  positive,
+  icon,
+}: {
+  label: string;
+  amountUsd: number;
+  bcvRate: number;
+  delta: string;
+  positive: boolean;
+  icon: React.ReactNode;
+}) {
+  const amountVes = amountUsd * bcvRate;
+  
+  return (
+    <div className="bg-white border border-zinc-200 rounded-xl p-5">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-xs font-semibold uppercase tracking-widest text-zinc-400">{label}</p>
+        <div className="w-8 h-8 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center">
+          {icon}
+        </div>
+      </div>
+      <div className="flex flex-col">
+        <p className="text-3xl font-bold tracking-tight text-zinc-900 leading-none">
+          {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amountUsd)}
+        </p>
+        <p className="text-xs font-semibold text-zinc-400 mt-1">
+          Bs. {new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amountVes)}
+        </p>
+      </div>
+      <div className={`flex items-center gap-1 mt-3 text-xs font-semibold ${positive ? 'text-emerald-600' : 'text-red-500'}`}>
         <ArrowUpRight className="w-3.5 h-3.5" />
         {delta} vs ayer
       </div>

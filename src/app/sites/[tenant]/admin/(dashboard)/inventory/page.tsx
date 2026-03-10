@@ -11,6 +11,7 @@ import { getProducts, deleteProduct, getStoreByDomain } from '@/lib/api/inventor
 export default function AdminInventoryPage() {
   const { tenant } = useParams();
   const [products, setProducts] = useState<any[]>([]);
+  const [bcvRate, setBcvRate] = useState<number>(1);
   const [loading, setLoading] = useState(true);
   const [storeId, setStoreId] = useState<string | null>(null);
 
@@ -18,6 +19,19 @@ export default function AdminInventoryPage() {
     async function loadData() {
       try {
         const store = await getStoreByDomain(tenant as string);
+        
+        // Fetch Akomo global rates directly from client proxy or original API
+        try {
+          const res = await fetch('https://api.akomo.xyz/api/exchange-rates');
+          if (res.ok) {
+            const data = await res.json();
+            const usdLabel = data?.rates?.find((r: any) => r.label === 'USD')?.value;
+            if (usdLabel) setBcvRate(parseFloat(usdLabel.replace(',', '.')));
+          }
+        } catch (e) {
+          console.error('Failed to get explicit client side rate for inventory', e);
+        }
+
         if (store) {
           setStoreId(store.id);
           const data = await getProducts(store.id);
@@ -101,13 +115,26 @@ export default function AdminInventoryPage() {
                       </span>
                     )}
                   </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className={`text-xs font-bold uppercase tracking-widest ${p.stock === 0 ? 'text-red-600' : 'text-zinc-900'}`}>
-                      Stock: {p.stock}
-                    </span>
-                    <span className="text-xs font-bold text-zinc-900">
-                      ${p.price}
-                    </span>
+                  <div className="mt-3 flex gap-4">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">
+                        Precio
+                      </span>
+                      <span className="font-bold text-black tracking-tight mt-0.5">
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(p.price)}
+                      </span>
+                      <span className="text-[10px] font-semibold text-zinc-500">
+                        Bs. {new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(p.price * bcvRate)}
+                      </span>
+                    </div>
+                    <div className="flex flex-col border-l border-zinc-100 pl-4">
+                      <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">
+                        Stock
+                      </span>
+                      <span className={`text-xs font-bold uppercase tracking-widest mt-1.5 ${p.stock === 0 ? 'text-red-600' : 'text-zinc-900'}`}>
+                        {p.stock === 0 ? 'AGOTADO' : p.stock}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -176,7 +203,14 @@ export default function AdminInventoryPage() {
                     )}
                   </td>
                   <td className="px-6 py-5">
-                    <span className="font-bold text-black tracking-tight">${p.price}</span>
+                    <div className="flex flex-col">
+                      <span className="font-bold text-black tracking-tight leading-none">
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(p.price)}
+                      </span>
+                      <span className="text-[10px] font-semibold text-zinc-500 mt-1">
+                        Bs. {new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(p.price * bcvRate)}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-6 py-5">
                     <span className={`text-xs font-bold tracking-widest ${p.stock === 0 ? 'text-red-600' : 'text-black'}`}>

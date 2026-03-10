@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { PRODUCTS } from '@/lib/data';
+import { PriceDisplay } from '@/components/ui/price-display';
 
 export default function ProductsPage() {
   return (
@@ -24,7 +25,7 @@ export default function ProductsPage() {
             <div className="flex flex-col gap-1">
               <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">{product.category}</span>
               <h3 className="text-base md:text-lg font-bold text-black">{product.title}</h3>
-              <p className="text-base md:text-lg text-black mt-1 md:mt-2">{product.price}</p>
+              <PriceDisplay amount={product.price} className="mt-1 md:mt-2 text-base md:text-lg" />
             </div>
           </Link>
         ))}

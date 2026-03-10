@@ -4,8 +4,6 @@ import OnboardingWizard from '@/features/onboarding/components/OnboardingWizard'
 
 export default async function OnboardingPage() {
   // Hide onboarding for now - navigate to dashboard directly
-  redirect('http://demo.localhost:3000/admin');
-
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -17,10 +15,12 @@ export default async function OnboardingPage() {
       .eq('user_id', user.id)
       .limit(1);
 
-    if (stores && stores.length > 0) {
-      // Ya tiene tienda, mandarlo al dashboard (necesitamos el tenant)
+    if (stores && stores.length > 0 && stores[0].stores) {
+      // Redirigimos al admin del primer tenant encontrado
       const storeData = stores[0].stores as any;
       const storeDomain = storeData?.domain;
+      
+      // Compute full host
       const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost';
       const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
       // Construir la url con el puerto de forma rudimentaria (asumimos 3000 en dev)
@@ -28,6 +28,9 @@ export default async function OnboardingPage() {
       
       const host = `${storeDomain}.${rootDomain}${portText}`;
       redirect(`${protocol}://${host}/admin`);
+    } else if (user) {
+      // Solo forzamos el redirect a logout si no tienen tienda y de verdad existe usuario (evitar loops)
+      redirect('/api/auth/logout');
     }
   }
 

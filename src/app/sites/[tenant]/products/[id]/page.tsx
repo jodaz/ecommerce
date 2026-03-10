@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation';
 import { ShoppingBag } from 'lucide-react';
 import { PRODUCTS } from '@/lib/data';
+import { PriceDisplay } from '@/components/ui/price-display';
+import { formatUsd } from '@/lib/currency';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -10,8 +12,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  // Pre-fill a WhatsApp message
-  const whatsappMsg = encodeURIComponent(`Hola, estoy interesado en el producto: ${product.title} (${product.price}). ¿Tienen disponibilidad?`);
+  // Pre-fill a WhatsApp message with the correct USD notation
+  const whatsappMsg = encodeURIComponent(`Hola, estoy interesado en el producto: ${product.title} (${formatUsd(product.price)}). ¿Tienen disponibilidad?`);
   const whatsappUrl = `https://wa.me/5804121833072?text=${whatsappMsg}`;
 
   return (
@@ -30,7 +32,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <div className="flex flex-col justify-center">
           <span className="text-sm font-bold uppercase tracking-widest text-zinc-500 mb-4">{product.category}</span>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-black mb-6 uppercase">{product.title}</h1>
-          <p className="text-3xl text-black mb-8">{product.price}</p>
+          
+          <div className="mb-8">
+            <PriceDisplay amount={product.price} className="text-3xl" vesClassName="text-lg mt-2 font-medium" />
+          </div>
           
           <p className="text-lg text-zinc-700 leading-relaxed mb-12">
             {product.description}
