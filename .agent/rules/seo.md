@@ -1,3 +1,8 @@
+---
+trigger: model_decision
+description: When working on the frontend of the website (landing, terms, every related page which is not included in "sites" directory)
+---
+
 # SEO and Metadata Standards
 
 All page components in this project must follow these SEO and metadata standards to ensure optimal search engine visibility and consistent social sharing.

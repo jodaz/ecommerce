@@ -35,11 +35,13 @@ export default function LandingPage() {
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16 relative z-20">
-            <div className="text-white uppercase tracking-[0.2em] sm:tracking-[0.3em] font-bold text-xl sm:text-2xl py-4 flex items-center gap-3">
-              <span className="h-px w-8 sm:w-16 bg-gradient-to-r from-transparent to-emerald-500"></span>
-              PROXIMAMENTE
-              <span className="h-px w-8 sm:w-16 bg-gradient-to-l from-transparent to-emerald-500"></span>
-            </div>
+            <Link 
+              href="/onboarding" 
+              className="bg-white text-black hover:bg-gray-200 px-8 py-4 rounded-full font-bold text-lg transition-all shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] flex items-center gap-2"
+            >
+              Comienza gratis
+              <ChevronRight className="w-5 h-5" />
+            </Link>
           </div>
           
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-sm text-gray-400">

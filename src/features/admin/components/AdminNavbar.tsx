@@ -117,7 +117,13 @@ export function AdminNavbar() {
         {/* Footer – logout */}
         <div className="px-3 py-4 border-t border-zinc-800">
           <button
-            onClick={() => logout()}
+            onClick={async () => {
+              const { createClient } = await import('@/lib/supabase/client');
+              const supabase = createClient();
+              await supabase.auth.signOut();
+              logout();
+              window.location.href = '/admin/login';
+            }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-red-400 transition-colors"
           >
             <LogOut className="w-4 h-4 shrink-0" />

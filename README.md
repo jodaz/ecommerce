@@ -20,6 +20,16 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Authentication and User Roles
+
+This multi-tenant SaaS e-commerce platform implements a Role-Based Access Control (RBAC) system with tenant-level isolation:
+
+- **Business Owner (Admin):** One admin can manage multiple stores. This role acts as a business owner. They have full access to all categories, users, settings, shops, stocks, and sales data across all the stores they own.
+- **Store Analyst:** One analyst manages exactly one specific store. They have restricted access, limited to viewing stock and sales data from their assigned shop only.
+- **Platform Admin:** A super-user who manages the global SaaS platform (billing, overall store management) via the root domain.
+- **Customers (Buyers):** Visitors who browse and purchase from the stores. They do not require authentication or accounts to checkout (guest checkout only).
+
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
