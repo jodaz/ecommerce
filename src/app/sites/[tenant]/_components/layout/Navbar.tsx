@@ -1,10 +1,16 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-export default function Navbar({ business }: { business?: any }) {
+interface NavbarProps {
+  business: {
+    name: string;
+    logo_url?: string;
+  };
+}
+
+export default function Navbar({ business }: NavbarProps) {
   const logoUrl = business?.logo_url || '/logo.svg';
-  const businessName = business?.name || 'simple';
-  const businessNameEnd = business?.name ? '' : 'shop';
+  const businessName = business?.name || 'simpleshop';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/80 backdrop-blur-md">
@@ -13,14 +19,14 @@ export default function Navbar({ business }: { business?: any }) {
           <div className="relative w-10 h-10 transition-transform group-hover:scale-110">
             <Image 
               src={logoUrl} 
-              alt={`${business?.name || 'simpleshop'} logo`} 
+              alt={`${businessName} logo`} 
               fill
               className="object-contain"
               priority
             />
           </div>
           <span className="text-xl font-bold tracking-tighter text-black hidden sm:block transition-colors">
-            {businessName}<span className="text-emerald-600 group-hover:text-emerald-500 transition-colors">{businessNameEnd}</span>
+            {businessName}
           </span>
         </Link>
         <nav className="hidden md:flex items-center gap-8">

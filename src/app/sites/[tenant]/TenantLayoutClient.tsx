@@ -1,11 +1,16 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
+import Navbar from './_components/layout/Navbar';
+import Footer from './_components/layout/Footer';
 import { Toaster } from 'sonner';
 
-export function TenantLayoutClient({ children }: { children: React.ReactNode }) {
+interface TenantLayoutClientProps {
+  children: React.ReactNode;
+  business: any; // We can refine this type eventually, but 'any' is quick for the DB return
+}
+
+export function TenantLayoutClient({ children, business }: TenantLayoutClientProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.includes('/admin');
 
@@ -20,11 +25,11 @@ export function TenantLayoutClient({ children }: { children: React.ReactNode }) 
 
   return (
     <>
-      <Navbar />
+      <Navbar business={business} />
       <main className="flex-1 flex flex-col">
         {children}
       </main>
-      <Footer />
+      <Footer business={business} />
       <Toaster position="top-right" expand={false} richColors={false} />
     </>
   );

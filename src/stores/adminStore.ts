@@ -21,6 +21,7 @@ export interface Business {
 export interface BusinessSettings {
   business_id: string;
   description: string;
+  phone: string;
   facebook_url: string;
   instagram_url: string;
   tiktok_url: string;
@@ -88,12 +89,6 @@ interface AdminState {
   addCategory: (category: Omit<Category, 'id'>) => void;
   updateCategory: (id: string, category: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
-
-  // Business Payment Methods
-  businessPaymentMethods: BusinessPaymentMethod[];
-  addBusinessPaymentMethod: (pm: Omit<BusinessPaymentMethod, 'id'>) => void;
-  updateBusinessPaymentMethod: (id: string, pm: Partial<BusinessPaymentMethod>) => void;
-  deleteBusinessPaymentMethod: (id: string) => void;
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -117,9 +112,6 @@ export const useAdminStore = create<AdminState>()(
       categories: [
         { id: '1', name: 'Línea Blanca', has_page: true },
         { id: '2', name: 'Electrónica', has_page: true },
-      ],
-      businessPaymentMethods: [
-        { id: '1', business_id: 'b1', type: 'Zelle', label: 'Zelle Principal', details: 'pagos@ejemplo.com', isActive: true },
       ],
 
       // CONTEXT ACTIONS
@@ -168,16 +160,6 @@ export const useAdminStore = create<AdminState>()(
         categories: state.categories.filter(c => c.id !== id)
       })),
 
-      // BUSINESS PAYMENT METHOD ACTIONS
-      addBusinessPaymentMethod: (pm) => set((state) => ({
-        businessPaymentMethods: [...state.businessPaymentMethods, { ...pm, id: Math.random().toString(36).substr(2, 9) }]
-      })),
-      updateBusinessPaymentMethod: (id, updatedFields) => set((state) => ({
-        businessPaymentMethods: state.businessPaymentMethods.map(p => p.id === id ? { ...p, ...updatedFields } : p)
-      })),
-      deleteBusinessPaymentMethod: (id) => set((state) => ({
-        businessPaymentMethods: state.businessPaymentMethods.filter(p => p.id !== id)
-      })),
     }),
     {
       name: 'megaimport-admin-storage',

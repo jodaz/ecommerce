@@ -10,9 +10,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 });
   }
 
+  const directory = formData.get('folder') as string | null || 'product-images';
   const fileExt = file.name.split('.').pop() || 'png';
   const fileName = `${Math.random()}.${fileExt}`;
-  const filePath = `product-images/${fileName}`;
+  const filePath = `${directory}/${fileName}`;
 
   const supabase = await createClient();
   

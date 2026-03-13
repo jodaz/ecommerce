@@ -2,11 +2,26 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FacebookIcon, InstagramIcon, TikTokIcon, TwitterIcon } from '@/components/core/icons';
 
-export default function Footer({ business }: { business?: any }) {
+interface FooterProps {
+  business: {
+    name: string;
+    logo_url?: string;
+    business_settings?: {
+      phone?: string;
+      description?: string;
+      instagram_url?: string;
+      facebook_url?: string;
+      tiktok_url?: string;
+      twitter_url?: string;
+    }
+  };
+}
+
+export default function Footer({ business }: FooterProps) {
   const logoUrl = business?.logo_url || '/logo.svg';
   const settings = business?.business_settings;
   const phoneNumber = settings?.phone || '+58 412 13 15 110';
-  const description = settings?.description || 'Crea, gestiona y escala tu negocio digital con la plataforma multi-tenant definitiva.';
+  const description = settings?.description || 'Tu socio digital de confianza.';
   const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
 
   return (
@@ -25,7 +40,7 @@ export default function Footer({ business }: { business?: any }) {
               {business?.name || 'simpleshop'}
             </span>
           </div>
-          <p className="text-zinc-500">
+          <p className="text-zinc-500 italic">
             {description}
           </p>
         </div>
@@ -76,8 +91,8 @@ export default function Footer({ business }: { business?: any }) {
           </div>
         </div>
       </div>
-      <div className="container mx-auto px-4 mt-12 pt-8 border-t border-zinc-200 text-center text-xs text-zinc-400">
-        &copy; {new Date().getFullYear()} simpleshop. Todos los derechos reservados.
+      <div className="container mx-auto px-4 mt-12 pt-8 border-t border-zinc-200 text-center text-xs text-zinc-400 font-medium">
+        &copy; {new Date().getFullYear()} {business.name}. Todos los derechos reservados.
       </div>
     </footer>
   );

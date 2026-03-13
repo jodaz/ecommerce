@@ -95,3 +95,36 @@ export async function deleteProduct(id: string) {
   });
   if (!res.ok) throw new Error('Error deleting product');
 }
+
+export async function getPaymentMethods(businessId: string) {
+  const res = await fetch(`/api/payment-methods?business_id=${encodeURIComponent(businessId)}`);
+  if (!res.ok) throw new Error('Error fetching payment methods');
+  return res.json();
+}
+
+export async function createPaymentMethod(data: any) {
+  const res = await fetch('/api/payment-methods', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Error creating payment method');
+  return res.json();
+}
+
+export async function updatePaymentMethod(id: string, data: any) {
+  const res = await fetch(`/api/payment-methods/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Error updating payment method');
+  return res.json();
+}
+
+export async function deletePaymentMethod(id: string) {
+  const res = await fetch(`/api/payment-methods/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Error deleting payment method');
+}

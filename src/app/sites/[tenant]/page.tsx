@@ -1,7 +1,7 @@
-import Hero from '@/features/home/components/Hero';
-import ProductRow from '@/features/products/components/ProductRow';
-import PaymentBanner from '@/features/home/components/PaymentBanner';
-import { getBusinessBySlug } from '@/lib/api/business';
+import Hero from './_components/home/Hero';
+import ProductGrid from './_components/home/ProductGrid';
+import PaymentBanner from './_components/home/PaymentBanner';
+import { getBusinessBySlug, getPaymentMethodsForBusiness } from '@/lib/api/business';
 import { getProductsForStore } from '@/lib/api/products';
 import { notFound } from 'next/navigation';
 
@@ -14,22 +14,13 @@ export default async function Home({ params }: { params: Promise<{ tenant: strin
   }
 
   const groupedProducts = await getProductsForStore(business.id);
+  const paymentMethods = await getPaymentMethodsForBusiness(business.id);
 
   return (
     <div className="bg-white">
       <Hero storeName={business.name} />
-      <div className="bg-white">
-        {Object.entries(groupedProducts).length > 0 ? (
-          Object.entries(groupedProducts).map(([categoryName, items]) => (
-            <ProductRow key={categoryName} title={categoryName} items={items} />
-          ))
-        ) : (
-          <div className="py-20 text-center text-gray-500">
-            No hay productos disponibles en esta tienda.
-          </div>
-        )}
-      </div>
-      <PaymentBanner />
+      <ProductGrid groupedProducts={groupedProducts} />
+      <PaymentBanner methods={paymentMethods} />
     </div>
   );
 }

@@ -1,34 +1,38 @@
 'use client';
 
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { 
-  UploadCloudIcon, 
-  FacebookIcon, 
-  InstagramIcon, 
-  TwitterIcon, 
-  ExternalLinkIcon, 
-  PencilIcon, 
-  Trash2Icon, 
-  CheckIcon, 
-  XIcon,
   PayPalIcon,
   ZelleIcon,
   BinanceIcon,
   SmartphoneIcon,
-  BankIcon
+  BankIcon,
+  PencilIcon,
+  Trash2Icon
 } from '@/components/core/icons';
 import Link from 'next/link';
 import { useAdminStore, PaymentMethodType } from '@/stores/adminStore';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { getPaymentMethods, createPaymentMethod, updatePaymentMethod, deletePaymentMethod } from '@/lib/api/inventory-client';
+
+// Modular Components
+import BusinessProfileForm from '../../_components/settings/BusinessProfileForm';
+import PaymentMethodsTable from '../../_components/settings/PaymentMethodsTable';
+import PaymentMethodModal from '../../_components/settings/PaymentMethodModal';
+import DeleteConfirmDialog from '@/components/ui/DeleteConfirmDialog';
 
 const settingsSchema = z.object({
   companyName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
   description: z.string().optional(),
-  facebook: z.string().url('URL inválida').or(z.literal('')),
-  instagram: z.string().url('URL inválida').or(z.literal('')),
-  tiktok: z.string().url('URL inválida').or(z.literal('')),
-  twitter: z.string().url('URL inválida').or(z.literal('')),
+  phone: z.string().optional(),
+  facebook: z.string().optional(),
+  instagram: z.string().optional(),
+  tiktok: z.string().optional(),
+  twitter: z.string().optional(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
@@ -50,225 +54,255 @@ const PAYMENT_COLORS: Record<PaymentMethodType, string> = {
 };
 
 export default function AdminSettingsPage() {
-  const { profiles, deleteProfile, businessPaymentMethods, deleteBusinessPaymentMethod, updateBusinessPaymentMethod } = useAdminStore();
+  const { 
+    activeBusiness, 
+    businessSettings, 
+    profiles, 
+    deleteProfile, 
+    login
+  } = useAdminStore();
   
+  // Profile Edit State
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(activeBusiness?.logo_url || null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Payment Methods States
+  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [editingPayment, setEditingPayment] = useState<any>(null);
+  const [paymentForm, setPaymentForm] = useState({ type: 'Zelle', label: '', details: '', is_active: true });
+  
+  // Delete States
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [pmToDelete, setPmToDelete] = useState<{ id: string, label: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const loadPaymentMethods = async (businessId: string) => {
+    try {
+      setLoadingPayments(true);
+      const data = await getPaymentMethods(businessId);
+      setPaymentMethods(data || []);
+    } catch (error) {
+      toast.error('Error al cargar los métodos de pago');
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
+
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
-      companyName: 'simpleshop',
-      description: 'Tienda simpleshop. Los mejores precios en línea blanca, tecnología y hogar.',
-      facebook: '',
-      instagram: '',
-      tiktok: '',
-      twitter: '',
+      companyName: activeBusiness?.name || '',
+      description: businessSettings?.description || '',
+      phone: businessSettings?.phone || '',
+      facebook: businessSettings?.facebook_url || '',
+      instagram: businessSettings?.instagram_url || '',
+      tiktok: businessSettings?.tiktok_url || '',
+      twitter: businessSettings?.twitter_url || '',
     },
   });
 
+  useEffect(() => {
+    if (activeBusiness || businessSettings) {
+      reset({
+        companyName: activeBusiness?.name || '',
+        description: businessSettings?.description || '',
+        phone: businessSettings?.phone || '',
+        facebook: businessSettings?.facebook_url || '',
+        instagram: businessSettings?.instagram_url || '',
+        tiktok: businessSettings?.tiktok_url || '',
+        twitter: businessSettings?.twitter_url || '',
+      });
+      setPreviewUrl(activeBusiness?.logo_url || null);
+    }
+    
+    if (activeBusiness && !loadingPayments && paymentMethods.length === 0) {
+      loadPaymentMethods(activeBusiness.id);
+    }
+  }, [activeBusiness, businessSettings, reset]);
+
+  const handleSavePaymentMethod = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeBusiness) return;
+    try {
+      if (editingPayment) {
+        const updated = await updatePaymentMethod(editingPayment.id, paymentForm);
+        setPaymentMethods(prev => prev.map(p => p.id === editingPayment.id ? updated : p));
+        toast.success('Método actualizado', { className: "bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]" });
+      } else {
+        const created = await createPaymentMethod({ ...paymentForm, business_id: activeBusiness.id });
+        setPaymentMethods(prev => [created, ...prev]);
+        toast.success('Método agregado', { className: "bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]" });
+      }
+      setIsPaymentModalOpen(false);
+    } catch (error) {
+      toast.error('Error al guardar el método de pago');
+    }
+  };
+
+  const confirmDeletePaymentMethod = async () => {
+    if (!pmToDelete) return;
+    try {
+      setIsDeleting(true);
+      await deletePaymentMethod(pmToDelete.id);
+      setPaymentMethods(prev => prev.filter(p => p.id !== pmToDelete.id));
+      toast.success('Método eliminado', { className: 'bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]' });
+      setIsDeleteModalOpen(false);
+      setPmToDelete(null);
+    } catch (error) {
+      toast.error('Error al eliminar');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleTogglePaymentStatus = async (id: string, currentStatus: boolean) => {
+    try {
+      const updated = await updatePaymentMethod(id, { is_active: !currentStatus });
+      setPaymentMethods(prev => prev.map(p => p.id === id ? updated : p));
+    } catch (error) {
+      toast.error('Error al cambiar el estado');
+    }
+  };
+
   const onSubmit = async (data: SettingsFormValues) => {
-    console.log('Settings data:', data);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    alert('Configuración guardada correctamente');
+    if (!activeBusiness) return;
+
+    try {
+      let finalLogoUrl = activeBusiness.logo_url;
+
+      if (logoFile) {
+        const formData = new FormData();
+        formData.append('file', logoFile);
+        formData.append('folder', 'business-logos');
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadRes.ok) throw new Error('Error al subir el logo');
+        const uploadData = await uploadRes.json();
+        finalLogoUrl = uploadData.url;
+      }
+
+      const response = await fetch('/api/businesses/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          businessId: activeBusiness.id,
+          name: data.companyName,
+          description: data.description,
+          phone: data.phone,
+          facebook_url: data.facebook,
+          instagram_url: data.instagram,
+          tiktok_url: data.tiktok,
+          twitter_url: data.twitter,
+          logo_url: finalLogoUrl
+        }),
+      });
+
+      if (!response.ok) throw new Error('Error al guardar la configuración');
+
+      const currentState = useAdminStore.getState();
+      login(
+        currentState.currentProfile!, 
+        { ...activeBusiness, name: data.companyName, logo_url: finalLogoUrl }, 
+        { 
+          ...businessSettings!, 
+          description: data.description || '',
+          phone: data.phone || '',
+          facebook_url: data.facebook || '',
+          instagram_url: data.instagram || '',
+          tiktok_url: data.tiktok || '',
+          twitter_url: data.twitter || ''
+        }
+      );
+
+      setIsEditingProfile(false);
+      toast.success('Configuración guardada correctamente', {
+        className: "bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]"
+      });
+    } catch (error: any) {
+      toast.error(error.message || 'Error desconocido', {
+        className: "bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]"
+      });
+    }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-20">
+    <div className="max-w-4xl mx-auto space-y-12 pb-20 text-black">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
-        <p className="text-zinc-500 mt-2">Administrar perfil de la empresa, redes sociales, métodos de pago y usuarios</p>
+        <p className="text-zinc-500 mt-2 font-medium">Administrar perfil de la empresa, redes sociales, métodos de pago y usuarios</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 bg-white border border-zinc-200 p-6 md:p-8">
-        {/* Company Logo Upload Area */}
-        <div className="space-y-2">
-          <label className="block text-sm font-bold uppercase tracking-widest text-zinc-800">
-            Logo de la Empresa
-          </label>
-          <div className="border-2 border-dashed border-zinc-200 p-6 flex flex-col items-center justify-center bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer min-h-[160px]">
-            <UploadCloudIcon className="w-8 h-8 text-zinc-400 mb-3" />
-            <p className="text-sm font-semibold text-zinc-600">Subir nuevo logo</p>
-            <p className="text-xs text-zinc-400 mt-1">Recomendado: 512x512px (PNG, JPG)</p>
-          </div>
-        </div>
-
-        {/* Company Profile */}
-        <div className="space-y-6">
-          <h2 className="text-lg font-bold tracking-tight border-b border-zinc-200 pb-2">Perfil de la Empresa</h2>
-          
-          <div className="space-y-2">
-            <label htmlFor="companyName" className="block text-sm font-bold uppercase tracking-widest text-zinc-800">
-              Nombre de la Empresa
-            </label>
-            <input
-              id="companyName"
-              type="text"
-              {...register('companyName')}
-              className={`w-full h-11 px-4 border ${errors.companyName ? 'border-red-500' : 'border-zinc-200'} focus:outline-none focus:border-black transition-colors rounded-none`}
-            />
-            {errors.companyName && <p className="text-red-500 text-xs font-semibold">{errors.companyName.message}</p>}
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="description" className="block text-sm font-bold uppercase tracking-widest text-zinc-800">
-              Descripción Corta
-            </label>
-            <textarea
-              id="description"
-              {...register('description')}
-              rows={3}
-              className="w-full p-4 border border-zinc-200 focus:outline-none focus:border-black transition-colors rounded-none resize-none"
-            />
-          </div>
-        </div>
-
-        {/* Social Media Links */}
-        <div className="space-y-6 pt-4">
-          <h2 className="text-lg font-bold tracking-tight border-b border-zinc-200 pb-2">Redes Sociales</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label htmlFor="instagram" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                <InstagramIcon className="w-4 h-4" /> URL de Instagram
-              </label>
-              <input
-                id="instagram"
-                type="url"
-                {...register('instagram')}
-                className={`w-full h-11 px-4 border ${errors.instagram ? 'border-red-500' : 'border-zinc-200'} focus:outline-none focus:border-black transition-colors rounded-none`}
-                placeholder="https://instagram.com/"
-              />
-              {errors.instagram && <p className="text-red-500 text-xs font-semibold">{errors.instagram.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="facebook" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                <FacebookIcon className="w-4 h-4" /> URL de Facebook
-              </label>
-              <input
-                id="facebook"
-                type="url"
-                {...register('facebook')}
-                className={`w-full h-11 px-4 border ${errors.facebook ? 'border-red-500' : 'border-zinc-200'} focus:outline-none focus:border-black transition-colors rounded-none`}
-                placeholder="https://facebook.com/"
-              />
-              {errors.facebook && <p className="text-red-500 text-xs font-semibold">{errors.facebook.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="tiktok" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                URL de TikTok
-              </label>
-              <input
-                id="tiktok"
-                type="url"
-                {...register('tiktok')}
-                className={`w-full h-11 px-4 border ${errors.tiktok ? 'border-red-500' : 'border-zinc-200'} focus:outline-none focus:border-black transition-colors rounded-none`}
-                placeholder="https://tiktok.com/"
-              />
-              {errors.tiktok && <p className="text-red-500 text-xs font-semibold">{errors.tiktok.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="twitter" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                <TwitterIcon className="w-4 h-4" /> URL de X (Twitter)
-              </label>
-              <input
-                id="twitter"
-                type="url"
-                {...register('twitter')}
-                className={`w-full h-11 px-4 border ${errors.twitter ? 'border-red-500' : 'border-zinc-200'} focus:outline-none focus:border-black transition-colors rounded-none`}
-                placeholder="https://x.com/"
-              />
-              {errors.twitter && <p className="text-red-500 text-xs font-semibold">{errors.twitter.message}</p>}
-            </div>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="pt-6 border-t border-zinc-200 flex justify-end">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-8 py-3 text-sm font-bold uppercase tracking-widest bg-black text-white hover:bg-zinc-800 transition-colors disabled:opacity-50"
-          >
-            {isSubmitting ? 'Guardando...' : 'Guardar Cambios'}
-          </button>
-        </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <BusinessProfileForm 
+          register={register as any}
+          errors={errors}
+          previewUrl={previewUrl}
+          onLogoClick={() => fileInputRef.current?.click()}
+          fileInputRef={fileInputRef}
+          onLogoChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setLogoFile(file);
+              const reader = new FileReader();
+              reader.onload = (event) => setPreviewUrl(event.target?.result as string);
+              reader.readAsDataURL(file);
+            }
+          }}
+          isEditing={isEditingProfile}
+          isSubmitting={isSubmitting}
+          onEdit={() => setIsEditingProfile(true)}
+          onCancel={() => {
+            setIsEditingProfile(false);
+            reset();
+            setPreviewUrl(activeBusiness?.logo_url || null);
+            setLogoFile(null);
+          }}
+          businessData={activeBusiness}
+          settingsData={businessSettings}
+        />
       </form>
 
-      {/* Payment Methods CRUD Table */}
-      <div className="space-y-6 bg-white border border-zinc-200 p-6 md:p-8">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-zinc-200">
-          <h2 className="text-lg font-bold tracking-tight">Métodos de Pago</h2>
-          <Link 
-            href="/admin/settings/payment-methods/new"
-            className="bg-black text-white px-6 py-3 text-sm font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors shrink-0"
-          >
-            Nuevo Método
-          </Link>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-zinc-50 uppercase tracking-widest text-xs font-semibold text-zinc-500">
-              <tr>
-                <th className="px-6 py-4 border-b border-zinc-200">Tipo</th>
-                <th className="px-6 py-4 border-b border-zinc-200">Etiqueta</th>
-                <th className="px-6 py-4 border-b border-zinc-200">Detalles</th>
-                <th className="px-6 py-4 border-b border-zinc-200">Estado</th>
-                <th className="px-6 py-4 border-b border-zinc-200 text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-200">
-              {businessPaymentMethods.map((pm) => {
-                const Icon = PAYMENT_ICONS[pm.type] || BankIcon;
-                return (
-                  <tr key={pm.id} className="hover:bg-zinc-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Icon className={`w-5 h-5 ${PAYMENT_COLORS[pm.type]}`} />
-                        <span className="font-bold">{pm.type}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-zinc-600">{pm.label}</td>
-                    <td className="px-6 py-4 text-zinc-600 max-w-[200px] truncate" title={pm.details}>{pm.details}</td>
-                    <td className="px-6 py-4">
-                      <button 
-                        onClick={() => updateBusinessPaymentMethod(pm.id, { isActive: !pm.isActive })}
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-widest border transition-colors ${
-                          pm.isActive 
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
-                            : 'bg-zinc-100 text-zinc-500 border-zinc-200'
-                        }`}
-                      >
-                        {pm.isActive ? 'Activo' : 'Inactivo'}
-                      </button>
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-3">
-                      <Link href={`/admin/settings/payment-methods/${pm.id}/edit`} className="text-zinc-500 hover:text-black transition-colors" title="Editar">
-                        <PencilIcon className="w-5 h-5 inline-block" />
-                      </Link>
-                      <button onClick={() => deleteBusinessPaymentMethod(pm.id)} className="text-zinc-500 hover:text-red-600 transition-colors" title="Eliminar">
-                        <Trash2Icon className="w-5 h-5 inline-block" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-              {businessPaymentMethods.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">No hay métodos de pago registrados</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <PaymentMethodsTable 
+        paymentMethods={paymentMethods}
+        loadingPayments={loadingPayments}
+        onAddMethod={() => {
+          setEditingPayment(null);
+          setPaymentForm({ type: 'Zelle', label: '', details: '', is_active: true });
+          setIsPaymentModalOpen(true);
+        }}
+        onEditMethod={(pm) => {
+          setEditingPayment(pm);
+          setPaymentForm({
+            type: pm.type,
+            label: pm.label,
+            details: pm.details,
+            is_active: pm.is_active
+          });
+          setIsPaymentModalOpen(true);
+        }}
+        onDeleteMethod={(id, label) => {
+          setPmToDelete({ id, label });
+          setIsDeleteModalOpen(true);
+        }}
+        onToggleStatus={handleTogglePaymentStatus}
+        PAYMENT_ICONS={PAYMENT_ICONS}
+        PAYMENT_COLORS={PAYMENT_COLORS}
+      />
 
-      {/* Users CRUD Table */}
       <div className="space-y-6 bg-white border border-zinc-200 p-6 md:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-zinc-200">
           <h2 className="text-lg font-bold tracking-tight">Usuarios</h2>
@@ -292,27 +326,27 @@ export default function AdminSettingsPage() {
             </thead>
             <tbody className="divide-y divide-zinc-200">
               {profiles.map((p) => (
-                <tr key={p.id} className="hover:bg-zinc-50 transition-colors">
+                <tr key={p.id} className="hover:bg-zinc-50 transition-colors font-medium">
                   <td className="px-6 py-4 font-bold">{p.full_name}</td>
                   <td className="px-6 py-4 text-zinc-600">user@example.com</td>
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2 py-1 bg-zinc-100 font-semibold text-xs tracking-widest border border-zinc-200">
+                    <span className="inline-flex items-center px-2 py-0.5 bg-zinc-100 font-bold text-[10px] tracking-widest border border-zinc-200 uppercase">
                       {p.role}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right space-x-3">
-                    <button className="text-zinc-500 hover:text-black transition-colors" title="Editar">
-                      <PencilIcon className="w-5 h-5 inline-block" />
+                    <button className="text-zinc-400 hover:text-black transition-colors" title="Editar">
+                      <PencilIcon className="w-4 h-4 inline-block" />
                     </button>
-                    <button onClick={() => deleteProfile(p.id)} className="text-zinc-500 hover:text-red-600 transition-colors" title="Eliminar">
-                      <Trash2Icon className="w-5 h-5 inline-block" />
+                    <button onClick={() => deleteProfile(p.id)} className="text-zinc-400 hover:text-red-600 transition-colors" title="Eliminar">
+                      <Trash2Icon className="w-4 h-4 inline-block" />
                     </button>
                   </td>
                 </tr>
               ))}
               {profiles.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-zinc-500">No hay usuarios registrados</td>
+                  <td colSpan={4} className="px-6 py-8 text-center text-zinc-500 uppercase text-xs tracking-widest font-bold">No hay usuarios registrados</td>
                 </tr>
               )}
             </tbody>
@@ -320,7 +354,6 @@ export default function AdminSettingsPage() {
         </div>
       </div>
 
-      {/* Categories CRUD Redirect */}
       <div className="space-y-4 bg-white border border-zinc-200 p-6 md:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
@@ -338,6 +371,24 @@ export default function AdminSettingsPage() {
         </div>
       </div>
       
+      <PaymentMethodModal 
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        editingPayment={editingPayment}
+        paymentForm={paymentForm}
+        onFormChange={setPaymentForm}
+        onSave={handleSavePaymentMethod}
+        PAYMENT_ICONS={PAYMENT_ICONS}
+      />
+
+      <DeleteConfirmDialog 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDeletePaymentMethod}
+        title="Eliminar Método de Pago"
+        description={`¿Estás seguro de que deseas eliminar el método de pago "${pmToDelete?.label}"? Esta acción no se puede deshacer.`}
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

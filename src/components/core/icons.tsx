@@ -186,3 +186,7 @@ export const InstagramIcon = ({ className, ...props }: Omit<IconProps, 'icon'>) 
 export const TwitterIcon = ({ className, ...props }: Omit<IconProps, 'icon'>) => (
   <Icon icon="lucide:twitter" className={className} {...props} />
 );
+
+export const TikTokIcon = ({ className, ...props }: Omit<IconProps, 'icon'>) => (
+  <Icon icon="simple-icons:tiktok" className={className} {...props} />
+);

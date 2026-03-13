@@ -23,7 +23,11 @@ interface PaymentMethod {
   details: string;
 }
 
-export default function PaymentBanner({ methods = [] }: { methods: PaymentMethod[] }) {
+interface PaymentBannerProps {
+  methods: PaymentMethod[];
+}
+
+export default function PaymentBanner({ methods = [] }: PaymentBannerProps) {
   if (methods.length === 0) return null;
 
   return (
