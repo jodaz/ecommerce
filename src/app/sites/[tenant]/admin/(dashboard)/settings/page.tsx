@@ -50,7 +50,7 @@ const PAYMENT_COLORS: Record<PaymentMethodType, string> = {
 };
 
 export default function AdminSettingsPage() {
-  const { categories, deleteCategory, users, deleteUser, paymentMethods, deletePaymentMethod, updatePaymentMethod } = useAdminStore();
+  const { profiles, deleteProfile, businessPaymentMethods, deleteBusinessPaymentMethod, updateBusinessPaymentMethod } = useAdminStore();
   
   const {
     register,
@@ -223,7 +223,7 @@ export default function AdminSettingsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200">
-              {paymentMethods.map((pm) => {
+              {businessPaymentMethods.map((pm) => {
                 const Icon = PAYMENT_ICONS[pm.type] || BankIcon;
                 return (
                   <tr key={pm.id} className="hover:bg-zinc-50 transition-colors">
@@ -237,7 +237,7 @@ export default function AdminSettingsPage() {
                     <td className="px-6 py-4 text-zinc-600 max-w-[200px] truncate" title={pm.details}>{pm.details}</td>
                     <td className="px-6 py-4">
                       <button 
-                        onClick={() => updatePaymentMethod(pm.id, { isActive: !pm.isActive })}
+                        onClick={() => updateBusinessPaymentMethod(pm.id, { isActive: !pm.isActive })}
                         className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-widest border transition-colors ${
                           pm.isActive 
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
@@ -251,14 +251,14 @@ export default function AdminSettingsPage() {
                       <Link href={`/admin/settings/payment-methods/${pm.id}/edit`} className="text-zinc-500 hover:text-black transition-colors" title="Editar">
                         <PencilIcon className="w-5 h-5 inline-block" />
                       </Link>
-                      <button onClick={() => deletePaymentMethod(pm.id)} className="text-zinc-500 hover:text-red-600 transition-colors" title="Eliminar">
+                      <button onClick={() => deleteBusinessPaymentMethod(pm.id)} className="text-zinc-500 hover:text-red-600 transition-colors" title="Eliminar">
                         <Trash2Icon className="w-5 h-5 inline-block" />
                       </button>
                     </td>
                   </tr>
                 );
               })}
-              {paymentMethods.length === 0 && (
+              {businessPaymentMethods.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">No hay métodos de pago registrados</td>
                 </tr>
@@ -291,32 +291,50 @@ export default function AdminSettingsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200">
-              {users.map((u) => (
-                <tr key={u.id} className="hover:bg-zinc-50 transition-colors">
-                  <td className="px-6 py-4 font-bold">{u.name}</td>
-                  <td className="px-6 py-4 text-zinc-600">{u.email}</td>
+              {profiles.map((p) => (
+                <tr key={p.id} className="hover:bg-zinc-50 transition-colors">
+                  <td className="px-6 py-4 font-bold">{p.full_name}</td>
+                  <td className="px-6 py-4 text-zinc-600">user@example.com</td>
                   <td className="px-6 py-4">
                     <span className="inline-flex items-center px-2 py-1 bg-zinc-100 font-semibold text-xs tracking-widest border border-zinc-200">
-                      {u.role}
+                      {p.role}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right space-x-3">
                     <button className="text-zinc-500 hover:text-black transition-colors" title="Editar">
                       <PencilIcon className="w-5 h-5 inline-block" />
                     </button>
-                    <button onClick={() => deleteUser(u.id)} className="text-zinc-500 hover:text-red-600 transition-colors" title="Eliminar">
+                    <button onClick={() => deleteProfile(p.id)} className="text-zinc-500 hover:text-red-600 transition-colors" title="Eliminar">
                       <Trash2Icon className="w-5 h-5 inline-block" />
                     </button>
                   </td>
                 </tr>
               ))}
-              {users.length === 0 && (
+              {profiles.length === 0 && (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center text-zinc-500">No hay usuarios registrados</td>
                 </tr>
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Categories CRUD Redirect */}
+      <div className="space-y-4 bg-white border border-zinc-200 p-6 md:p-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h2 className="text-lg font-bold tracking-tight">Categorías de Productos</h2>
+            <p className="text-sm text-zinc-500 mt-1">
+              Administrar categorías y secciones de tu sitio web.
+            </p>
+          </div>
+          <Link 
+            href="/admin/categories"
+            className="bg-black text-white px-6 py-3 text-sm font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors shrink-0"
+          >
+            Gestionar Categorías
+          </Link>
         </div>
       </div>
       

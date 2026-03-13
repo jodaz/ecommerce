@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { getStoreRole, isPlatformAdmin } from '@/lib/supabase/rbac';
+import { getBusinessRole, isPlatformAdmin } from '@/lib/supabase/rbac';
 import { AdminNavbar } from '~features/admin/components/AdminNavbar';
 
-import { getStoreByDomain } from '~features/stores/api/getStoreByDomain';
+import { getBusinessBySlug } from '@/lib/api/business';
 
 export const metadata: Metadata = {
   title: 'Panel de Administración | simpleshop',
@@ -20,20 +20,20 @@ export default async function AdminLayout({
 }) {
   const { tenant } = await params;
 
-  // Busca la tienda por subdominio
-  const store = await getStoreByDomain(tenant);
+  // Busca el negocio por slug (tenant)
+  const business = await getBusinessBySlug(tenant);
 
-  if (!store) {
+  if (!business) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-zinc-50 text-zinc-900">
-        <h1 className="text-xl font-bold">Tienda no encontrada</h1>
+        <h1 className="text-xl font-bold">Negocio no encontrado</h1>
       </div>
     );
   }
 
   // Valida la autorización del lado del servidor vía RBAC
   const [role, isSuper] = await Promise.all([
-    getStoreRole(store.id),
+    getBusinessRole(business.id),
     isPlatformAdmin()
   ]);
 

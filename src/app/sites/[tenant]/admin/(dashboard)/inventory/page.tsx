@@ -6,19 +6,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { getProducts, deleteProduct, getStoreByDomain } from '@/lib/api/inventory-client';
+import { getProducts, deleteProduct, getBusinessBySlug } from '@/lib/api/inventory-client';
 
 export default function AdminInventoryPage() {
   const { tenant } = useParams();
   const [products, setProducts] = useState<any[]>([]);
   const [bcvRate, setBcvRate] = useState<number>(1);
   const [loading, setLoading] = useState(true);
-  const [storeId, setStoreId] = useState<string | null>(null);
+  const [businessId, setBusinessId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const store = await getStoreByDomain(tenant as string);
+        const business = await getBusinessBySlug(tenant as string);
         
         // Fetch Akomo global rates directly from client proxy or original API
         try {
@@ -32,9 +32,9 @@ export default function AdminInventoryPage() {
           console.error('Failed to get explicit client side rate for inventory', e);
         }
 
-        if (store) {
-          setStoreId(store.id);
-          const data = await getProducts(store.id);
+        if (business) {
+          setBusinessId(business.id);
+          const data = await getProducts(business.id);
           setProducts(data || []);
         }
       } catch (error) {
@@ -109,9 +109,9 @@ export default function AdminInventoryPage() {
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-black truncate pr-4">{p.name}</h3>
                   <div className="mt-1 flex flex-wrap gap-1">
-                    {p.categories?.name && (
+                    {p.business_categories?.name && (
                       <span className="inline-flex items-center text-[10px] uppercase font-bold tracking-wider text-zinc-400">
-                        {p.categories.name}
+                        {p.business_categories.name}
                       </span>
                     )}
                   </div>
@@ -121,10 +121,10 @@ export default function AdminInventoryPage() {
                         Precio
                       </span>
                       <span className="font-bold text-black tracking-tight mt-0.5">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(p.price)}
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(p.base_price)}
                       </span>
                       <span className="text-[10px] font-semibold text-zinc-500">
-                        Bs. {new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(p.price * bcvRate)}
+                        Bs. {new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(p.base_price * bcvRate)}
                       </span>
                     </div>
                     <div className="flex flex-col border-l border-zinc-100 pl-4">
@@ -196,19 +196,19 @@ export default function AdminInventoryPage() {
                     <span className="font-bold text-black tracking-tight">{p.name}</span>
                   </td>
                   <td className="px-6 py-5">
-                    {p.categories?.name && (
+                    {p.business_categories?.name && (
                       <span className="inline-flex items-center gap-1.5 bg-zinc-50 border border-zinc-200 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-zinc-500 group-hover:bg-white transition-colors">
-                        {p.categories.name}
+                        {p.business_categories.name}
                       </span>
                     )}
                   </td>
                   <td className="px-6 py-5">
                     <div className="flex flex-col">
                       <span className="font-bold text-black tracking-tight leading-none">
-                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(p.price)}
+                        {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(p.base_price)}
                       </span>
                       <span className="text-[10px] font-semibold text-zinc-500 mt-1">
-                        Bs. {new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(p.price * bcvRate)}
+                        Bs. {new Intl.NumberFormat('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(p.base_price * bcvRate)}
                       </span>
                     </div>
                   </td>

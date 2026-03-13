@@ -9,7 +9,7 @@ import { ChevronLeft, Loader2, Tag } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getStoreByDomain, createCategory } from '@/lib/api/inventory-client';
+import { getBusinessBySlug, createCategory } from '@/lib/api/inventory-client';
 import { slugify } from '@/lib/utils';
 
 const categorySchema = z.object({
@@ -22,7 +22,7 @@ type CategoryFormValues = z.infer<typeof categorySchema>;
 export default function CreateCategoryPage() {
   const { tenant } = useParams();
   const router = useRouter();
-  const [storeId, setStoreId] = useState<string | null>(null);
+  const [businessId, setBusinessId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const {
@@ -40,9 +40,9 @@ export default function CreateCategoryPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const store = await getStoreByDomain(tenant as string);
-        if (store) {
-          setStoreId(store.id);
+        const business = await getBusinessBySlug(tenant as string);
+        if (business) {
+          setBusinessId(business.id);
         }
       } catch (error) {
         toast.error('Error al identificar la tienda');
@@ -54,12 +54,12 @@ export default function CreateCategoryPage() {
   }, [tenant]);
 
   const onSubmit = async (data: CategoryFormValues) => {
-    if (!storeId) return;
+    if (!businessId) return;
 
     try {
       const categoryData = {
         ...data,
-        store_id: storeId,
+        business_id: businessId,
         slug: slugify(data.name),
       };
 

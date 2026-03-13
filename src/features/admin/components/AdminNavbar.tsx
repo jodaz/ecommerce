@@ -21,7 +21,6 @@ const navItems = [
   { name: 'Dashboard',     path: '/admin',           icon: DashboardIcon },
   { name: 'Pedidos',       path: '/admin/orders',    icon: ShoppingBagIcon },
   { name: 'Inventario',    path: '/admin/inventory', icon: PackageIcon },
-  { name: 'Categorías',    path: '/admin/categories',icon: TagIcon },
   { name: 'Configuración', path: '/admin/settings',  icon: SettingsIcon },
 ];
 

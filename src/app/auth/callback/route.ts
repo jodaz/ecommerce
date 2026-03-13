@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { getStoreByDomain } from '~features/stores/api/getStoreByDomain';
+import { getBusinessBySlug } from '@/lib/api/business';
 
 /**
  * Manejador del callback de autenticación (OAuth/PKCE).
@@ -51,47 +51,47 @@ export async function GET(request: Request) {
       return NextResponse.redirect(`${origin}/admin/login?error=missing_tenant`);
     }
 
-    // Buscar la tienda en la BD
-    const store = await getStoreByDomain(tenantDomain);
+    // Buscar el negocio en la BD
+    const business = await getBusinessBySlug(tenantDomain);
     
-    if (!store) {
+    if (!business) {
       return NextResponse.redirect(`${origin}/admin/login?error=store_not_found`);
     }
 
-    // --- LÓGICA DE ONBOARDING / RECLAMO DE TIENDA ---
+    // --- LÓGICA DE ONBOARDING / RECLAMO DE NEGOCIO ---
     
-    // Comprobar si hay usuarios asignados a esta tienda
+    // Comprobar si hay profiles asignados a este negocio
     const { data: colleagues, error: countError } = await supabase
-      .from('store_users')
-      .select('user_id')
-      .eq('store_id', store.id);
+      .from('profiles')
+      .select('id')
+      .eq('business_id', business.id);
 
     if (countError) {
-      console.error('Error checking store users:', countError.message);
+      console.error('Error checking business profiles:', countError.message);
       return NextResponse.redirect(`${origin}/admin/login?error=database_error`);
     }
 
-    // Si la tienda está vacía, este usuario la reclama como admin
+    // Si el negocio está vacío, este usuario lo reclama como owner
     if (colleagues.length === 0) {
       const { error: claimError } = await supabase
-        .from('store_users')
+        .from('profiles')
         .insert({
-          store_id: store.id,
-          user_id: user.id,
-          role: 'admin'
+          id: user.id,
+          business_id: business.id,
+          role: 'owner'
         });
 
       if (claimError) {
-        console.error('Error claiming store:', claimError.message);
+        console.error('Error claiming business:', claimError.message);
         // Quizás el usuario logueó pero falló el registro de rol. 
         // Permitimos continuar si ya existe (carrera de ratas).
       }
     } else {
-      // Si la tienda ya tiene dueños, verificamos si este usuario es uno de ellos
-      const isAuthorized = colleagues.some(c => c.user_id === user.id);
+      // Si el negocio ya tiene dueños, verificamos si este usuario es uno de ellos
+      const isAuthorized = colleagues.some(c => c.id === user.id);
       
       if (!isAuthorized) {
-        // Usuario no pertenece a esta tienda. Cerramos sesión por seguridad para este tenant.
+        // Usuario no pertenece a este negocio. Cerramos sesión por seguridad para este tenant.
         await supabase.auth.signOut();
         return NextResponse.redirect(`${origin}/admin/login?error=unauthorized_for_store`);
       }

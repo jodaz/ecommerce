@@ -1,13 +1,13 @@
 import { createClient } from '@/lib/supabase/server';
 
-export type StoreRole = 'admin' | 'editor' | 'analyst';
+export type BusinessRole = 'owner' | 'admin' | 'manager' | 'staff';
 
 /**
- * Valida si el usuario autenticado actual tiene un rol específico (o cualquier rol) para una tienda dada.
- * @param storeId El UUID de la tienda
- * @returns El rol del usuario para esa tienda, o null si no está autorizado.
+ * Valida si el usuario autenticado actual tiene un rol específico para un negocio dado.
+ * @param businessId El UUID del negocio
+ * @returns El rol del usuario para ese negocio, o null si no está autorizado.
  */
-export async function getStoreRole(storeId: string): Promise<StoreRole | null> {
+export async function getBusinessRole(businessId: string): Promise<BusinessRole | null> {
   const supabase = await createClient();
   const { data: authData, error: authError } = await supabase.auth.getUser();
 
@@ -16,17 +16,17 @@ export async function getStoreRole(storeId: string): Promise<StoreRole | null> {
   }
 
   const { data, error } = await supabase
-    .from('store_users')
+    .from('profiles')
     .select('role')
-    .eq('store_id', storeId)
-    .eq('user_id', authData.user.id)
+    .eq('business_id', businessId)
+    .eq('id', authData.user.id)
     .single();
 
   if (error || !data) {
     return null;
   }
 
-  return data.role as StoreRole;
+  return data.role as BusinessRole;
 }
 
 /**

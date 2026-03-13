@@ -9,7 +9,7 @@ import { ChevronLeft, Loader2, Tag } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getStoreByDomain, getCategory, updateCategory } from '@/lib/api/inventory-client';
+import { getBusinessBySlug, getCategory, updateCategory } from '@/lib/api/inventory-client';
 import { slugify } from '@/lib/utils';
 
 const categorySchema = z.object({
@@ -22,7 +22,7 @@ type CategoryFormValues = z.infer<typeof categorySchema>;
 export default function EditCategoryPage() {
   const { tenant, id } = useParams();
   const router = useRouter();
-  const [storeId, setStoreId] = useState<string | null>(null);
+  const [businessId, setBusinessId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const {
@@ -37,9 +37,9 @@ export default function EditCategoryPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const store = await getStoreByDomain(tenant as string);
-        if (store) {
-          setStoreId(store.id);
+        const business = await getBusinessBySlug(tenant as string);
+        if (business) {
+          setBusinessId(business.id);
           const cat = await getCategory(id as string);
           if (cat) {
             setValue('name', cat.name);
@@ -57,7 +57,7 @@ export default function EditCategoryPage() {
   }, [tenant, id, setValue]);
 
   const onSubmit = async (data: CategoryFormValues) => {
-    if (!storeId) return;
+    if (!businessId) return;
 
     try {
       const categoryData = {

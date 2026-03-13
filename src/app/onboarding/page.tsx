@@ -7,18 +7,18 @@ export default async function OnboardingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  // Comprobar si el usuario, en caso de estar logueado, ya tiene una tienda
+  // Comprobar si el usuario, en caso de estar logueado, ya tiene un negocio
   if (user) {
-    const { data: stores } = await supabase
-      .from('store_users')
-      .select('stores(domain)')
-      .eq('user_id', user.id)
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('businesses(slug)')
+      .eq('id', user.id)
       .limit(1);
 
-    if (stores && stores.length > 0 && stores[0].stores) {
+    if (profiles && profiles.length > 0 && profiles[0].businesses) {
       // Redirigimos al admin del primer tenant encontrado
-      const storeData = stores[0].stores as any;
-      const storeDomain = storeData?.domain;
+      const businessData = profiles[0].businesses as any;
+      const businessSlug = businessData?.slug;
       
       // Compute full host
       const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || 'localhost';
@@ -26,7 +26,7 @@ export default async function OnboardingPage() {
       // Construir la url con el puerto de forma rudimentaria (asumimos 3000 en dev)
       const portText = process.env.NODE_ENV === 'production' ? '' : ':3000';
       
-      const host = `${storeDomain}.${rootDomain}${portText}`;
+      const host = `${businessSlug}.${rootDomain}${portText}`;
       redirect(`${protocol}://${host}/admin`);
     } else if (user) {
       // Solo forzamos el redirect a logout si no tienen tienda y de verdad existe usuario (evitar loops)

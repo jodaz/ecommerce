@@ -9,7 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter, useParams } from 'next/navigation';
-import { getStoreByDomain, getCategories, uploadProductImage, updateProduct, getProduct } from '@/lib/api/inventory-client';
+import { getBusinessBySlug, getCategories, uploadProductImage, updateProduct, getProduct } from '@/lib/api/inventory-client';
 import { slugify } from '@/lib/utils';
 
 const productSchema = z.object({
@@ -29,7 +29,7 @@ export default function EditProductPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
-  const [storeId, setStoreId] = useState<string | null>(null);
+  const [businessId, setBusinessId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -45,11 +45,11 @@ export default function EditProductPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const store = await getStoreByDomain(tenant as string);
-        if (store) {
-          setStoreId(store.id);
+        const business = await getBusinessBySlug(tenant as string);
+        if (business) {
+          setBusinessId(business.id);
           const [cats, prod] = await Promise.all([
-            getCategories(store.id),
+            getCategories(business.id),
             getProduct(id as string)
           ]);
           
@@ -76,7 +76,7 @@ export default function EditProductPage() {
   }, [tenant, id, setValue]);
 
   const onSubmit = async (data: ProductFormValues) => {
-    if (!storeId) return;
+    if (!businessId) return;
 
     try {
       let image_url = imagePreview;

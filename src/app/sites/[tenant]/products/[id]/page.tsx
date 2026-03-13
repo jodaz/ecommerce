@@ -1,16 +1,29 @@
 import { notFound } from 'next/navigation';
 import { ShoppingBag } from 'lucide-react';
-import { PRODUCTS } from '@/lib/data';
 import { PriceDisplay } from '@/components/ui/price-display';
 import { formatUsd } from '@/lib/currency';
+import { getProductById } from '@/lib/api/products';
+import { getBusinessBySlug } from '@/lib/api/business';
 
-export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const product = PRODUCTS.find(p => p.id === id);
+export default async function ProductDetailPage({ params }: { params: Promise<{ tenant: string, id: string }> }) {
+  const { tenant, id } = await params;
+  
+  const business = await getBusinessBySlug(tenant);
+  if (!business) notFound();
 
-  if (!product) {
+  const dbProduct = await getProductById(id);
+
+  if (!dbProduct || dbProduct.business_id !== business.id) {
     notFound();
   }
+
+  const product = {
+    title: dbProduct.name,
+    category: dbProduct.business_categories?.name || 'General',
+    price: dbProduct.base_price,
+    image: dbProduct.image_url || 'https://placehold.co/600x600/18181b/ffffff?text=No+Image',
+    description: dbProduct.description || 'Sin descripción disponible.'
+  };
 
   // Pre-fill a WhatsApp message with the correct USD notation
   const whatsappMsg = encodeURIComponent(`Hola, estoy interesado en el producto: ${product.title} (${formatUsd(product.price)}). ¿Tienen disponibilidad?`);

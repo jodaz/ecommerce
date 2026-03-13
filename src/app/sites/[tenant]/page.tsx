@@ -1,23 +1,23 @@
 import Hero from '@/features/home/components/Hero';
 import ProductRow from '@/features/products/components/ProductRow';
 import PaymentBanner from '@/features/home/components/PaymentBanner';
-import { getStoreByDomain } from '@/lib/api/store';
+import { getBusinessBySlug } from '@/lib/api/business';
 import { getProductsForStore } from '@/lib/api/products';
 import { notFound } from 'next/navigation';
 
 export default async function Home({ params }: { params: Promise<{ tenant: string }> }) {
   const { tenant } = await params;
   
-  const store = await getStoreByDomain(tenant);
-  if (!store) {
+  const business = await getBusinessBySlug(tenant);
+  if (!business) {
     notFound();
   }
 
-  const groupedProducts = await getProductsForStore(store.id);
+  const groupedProducts = await getProductsForStore(business.id);
 
   return (
     <div className="bg-white">
-      <Hero storeName={store.name} />
+      <Hero storeName={business.name} />
       <div className="bg-white">
         {Object.entries(groupedProducts).length > 0 ? (
           Object.entries(groupedProducts).map(([categoryName, items]) => (

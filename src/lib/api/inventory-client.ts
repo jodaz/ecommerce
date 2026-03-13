@@ -1,11 +1,11 @@
-export async function getStoreByDomain(domain: string) {
-  const res = await fetch(`/api/stores?domain=${encodeURIComponent(domain)}`);
-  if (!res.ok) throw new Error('Error fetching store');
+export async function getBusinessBySlug(slug: string) {
+  const res = await fetch(`/api/businesses?slug=${encodeURIComponent(slug)}`);
+  if (!res.ok) throw new Error('Error fetching business');
   return res.json();
 }
 
-export async function getProducts(storeId: string) {
-  const res = await fetch(`/api/products?store_id=${encodeURIComponent(storeId)}`);
+export async function getProducts(businessId: string) {
+  const res = await fetch(`/api/products?business_id=${encodeURIComponent(businessId)}`);
   if (!res.ok) throw new Error('Error fetching products');
   return res.json();
 }
@@ -16,8 +16,8 @@ export async function getProduct(id: string) {
   return res.json();
 }
 
-export async function getCategories(storeId: string) {
-  const res = await fetch(`/api/categories?store_id=${encodeURIComponent(storeId)}`);
+export async function getCategories(businessId: string) {
+  const res = await fetch(`/api/categories?business_id=${encodeURIComponent(businessId)}`);
   if (!res.ok) throw new Error('Error fetching categories');
   return res.json();
 }

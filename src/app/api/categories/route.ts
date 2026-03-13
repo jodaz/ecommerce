@@ -3,18 +3,18 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const storeId = searchParams.get('store_id');
+  const businessId = searchParams.get('business_id');
   
-  if (!storeId) {
-    return NextResponse.json({ error: 'store_id is required' }, { status: 400 });
+  if (!businessId) {
+    return NextResponse.json({ error: 'business_id is required' }, { status: 400 });
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase
-    .from('categories')
+    .from('business_categories')
     .select('*')
-    .eq('store_id', storeId)
-    .order('name');
+    .eq('business_id', businessId)
+    .order('created_at', { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   const supabase = await createClient();
   
   const { data, error } = await supabase
-    .from('categories')
+    .from('business_categories')
     .insert([body])
     .select()
     .single();

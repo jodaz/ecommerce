@@ -6,21 +6,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { getCategories, deleteCategory, getStoreByDomain } from '@/lib/api/inventory-client';
+import { getCategories, deleteCategory, getBusinessBySlug } from '@/lib/api/inventory-client';
 
 export default function AdminCategoriesPage() {
   const { tenant } = useParams();
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [storeId, setStoreId] = useState<string | null>(null);
+  const [businessId, setBusinessId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const store = await getStoreByDomain(tenant as string);
-        if (store) {
-          setStoreId(store.id);
-          const data = await getCategories(store.id);
+        const business = await getBusinessBySlug(tenant as string);
+        if (business) {
+          setBusinessId(business.id);
+          const data = await getCategories(business.id);
           setCategories(data || []);
         }
       } catch (error) {
