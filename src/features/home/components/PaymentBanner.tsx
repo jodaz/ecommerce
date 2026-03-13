@@ -1,10 +1,11 @@
-import Image from 'next/image';
+import { PayPalIcon, ZelleIcon, BinanceIcon, SmartphoneIcon, BankIcon } from '@/components/core/icons';
 
 const paymentMethods = [
-  { name: 'Pago Móvil', icon: '/icons/pago-movil.svg' },
-  { name: 'Zelle', icon: '/icons/zelle.svg' },
-  { name: 'Banesco', icon: '/icons/banesco.svg' },
-  { name: 'Mercantil', icon: '/icons/mercantil.svg' },
+  { name: 'PayPal', icon: PayPalIcon, color: 'text-[#003087]' },
+  { name: 'Zelle', icon: ZelleIcon, color: 'text-[#6d1ed1]' },
+  { name: 'Binance', icon: BinanceIcon, color: 'text-[#F3BA2F]' },
+  { name: 'Pago Móvil', icon: SmartphoneIcon, color: 'text-emerald-600' },
+  { name: 'Transferencia Bancaria', icon: BankIcon, color: 'text-zinc-700' },
 ];
 
 export default function PaymentBanner() {
@@ -17,9 +18,9 @@ export default function PaymentBanner() {
           </span>
           <div className="flex flex-wrap justify-center items-center gap-8">
             {paymentMethods.map((method) => (
-              <div key={method.name} className="flex items-center grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100 cursor-default">
-                <div className="h-6 w-16 relative">
-                  {/* For now, using text as placeholder for icons until I generate/find them */}
+              <div key={method.name} className="flex items-center grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100 cursor-default group">
+                <div className="flex items-center space-x-2">
+                  <method.icon className={`h-6 w-6 ${method.color}`} />
                   <span className="text-sm font-bold text-gray-800">{method.name}</span>
                 </div>
               </div>

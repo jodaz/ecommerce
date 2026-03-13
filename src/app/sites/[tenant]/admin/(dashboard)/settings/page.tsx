@@ -3,9 +3,24 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { UploadCloud, Facebook, Instagram, Twitter, ExternalLink, Pencil, Trash2, Check, X } from 'lucide-react';
+import { 
+  UploadCloudIcon, 
+  FacebookIcon, 
+  InstagramIcon, 
+  TwitterIcon, 
+  ExternalLinkIcon, 
+  PencilIcon, 
+  Trash2Icon, 
+  CheckIcon, 
+  XIcon,
+  PayPalIcon,
+  ZelleIcon,
+  BinanceIcon,
+  SmartphoneIcon,
+  BankIcon
+} from '@/components/core/icons';
 import Link from 'next/link';
-import { useAdminStore } from '@/stores/adminStore';
+import { useAdminStore, PaymentMethodType } from '@/stores/adminStore';
 
 const settingsSchema = z.object({
   companyName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -18,8 +33,24 @@ const settingsSchema = z.object({
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
+const PAYMENT_ICONS: Record<PaymentMethodType, any> = {
+  'PayPal': PayPalIcon,
+  'Zelle': ZelleIcon,
+  'Binance': BinanceIcon,
+  'Pago Móvil': SmartphoneIcon,
+  'Transferencia Bancaria': BankIcon,
+};
+
+const PAYMENT_COLORS: Record<PaymentMethodType, string> = {
+  'PayPal': 'text-[#003087]',
+  'Zelle': 'text-[#6d1ed1]',
+  'Binance': 'text-[#F3BA2F]',
+  'Pago Móvil': 'text-emerald-600',
+  'Transferencia Bancaria': 'text-zinc-700',
+};
+
 export default function AdminSettingsPage() {
-  const { categories, deleteCategory, users, deleteUser } = useAdminStore();
+  const { categories, deleteCategory, users, deleteUser, paymentMethods, deletePaymentMethod, updatePaymentMethod } = useAdminStore();
   
   const {
     register,
@@ -44,10 +75,10 @@ export default function AdminSettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12">
+    <div className="max-w-4xl mx-auto space-y-12 pb-20">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
-        <p className="text-zinc-500 mt-2">Administrar perfil de la empresa, redes sociales, categorías y usuarios</p>
+        <p className="text-zinc-500 mt-2">Administrar perfil de la empresa, redes sociales, métodos de pago y usuarios</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 bg-white border border-zinc-200 p-6 md:p-8">
@@ -57,7 +88,7 @@ export default function AdminSettingsPage() {
             Logo de la Empresa
           </label>
           <div className="border-2 border-dashed border-zinc-200 p-6 flex flex-col items-center justify-center bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer min-h-[160px]">
-            <UploadCloud className="w-8 h-8 text-zinc-400 mb-3" />
+            <UploadCloudIcon className="w-8 h-8 text-zinc-400 mb-3" />
             <p className="text-sm font-semibold text-zinc-600">Subir nuevo logo</p>
             <p className="text-xs text-zinc-400 mt-1">Recomendado: 512x512px (PNG, JPG)</p>
           </div>
@@ -100,7 +131,7 @@ export default function AdminSettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <label htmlFor="instagram" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                <Instagram className="w-4 h-4" /> URL de Instagram
+                <InstagramIcon className="w-4 h-4" /> URL de Instagram
               </label>
               <input
                 id="instagram"
@@ -114,7 +145,7 @@ export default function AdminSettingsPage() {
 
             <div className="space-y-2">
               <label htmlFor="facebook" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                <Facebook className="w-4 h-4" /> URL de Facebook
+                <FacebookIcon className="w-4 h-4" /> URL de Facebook
               </label>
               <input
                 id="facebook"
@@ -142,7 +173,7 @@ export default function AdminSettingsPage() {
 
             <div className="space-y-2">
               <label htmlFor="twitter" className="block text-sm font-bold uppercase tracking-widest text-zinc-800 flex items-center gap-2">
-                <Twitter className="w-4 h-4" /> URL de X (Twitter)
+                <TwitterIcon className="w-4 h-4" /> URL de X (Twitter)
               </label>
               <input
                 id="twitter"
@@ -167,6 +198,75 @@ export default function AdminSettingsPage() {
           </button>
         </div>
       </form>
+
+      {/* Payment Methods CRUD Table */}
+      <div className="space-y-6 bg-white border border-zinc-200 p-6 md:p-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-zinc-200">
+          <h2 className="text-lg font-bold tracking-tight">Métodos de Pago</h2>
+          <Link 
+            href="/admin/settings/payment-methods/new"
+            className="bg-black text-white px-6 py-3 text-sm font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors shrink-0"
+          >
+            Nuevo Método
+          </Link>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm whitespace-nowrap">
+            <thead className="bg-zinc-50 uppercase tracking-widest text-xs font-semibold text-zinc-500">
+              <tr>
+                <th className="px-6 py-4 border-b border-zinc-200">Tipo</th>
+                <th className="px-6 py-4 border-b border-zinc-200">Etiqueta</th>
+                <th className="px-6 py-4 border-b border-zinc-200">Detalles</th>
+                <th className="px-6 py-4 border-b border-zinc-200">Estado</th>
+                <th className="px-6 py-4 border-b border-zinc-200 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-200">
+              {paymentMethods.map((pm) => {
+                const Icon = PAYMENT_ICONS[pm.type] || BankIcon;
+                return (
+                  <tr key={pm.id} className="hover:bg-zinc-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Icon className={`w-5 h-5 ${PAYMENT_COLORS[pm.type]}`} />
+                        <span className="font-bold">{pm.type}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-zinc-600">{pm.label}</td>
+                    <td className="px-6 py-4 text-zinc-600 max-w-[200px] truncate" title={pm.details}>{pm.details}</td>
+                    <td className="px-6 py-4">
+                      <button 
+                        onClick={() => updatePaymentMethod(pm.id, { isActive: !pm.isActive })}
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-widest border transition-colors ${
+                          pm.isActive 
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                            : 'bg-zinc-100 text-zinc-500 border-zinc-200'
+                        }`}
+                      >
+                        {pm.isActive ? 'Activo' : 'Inactivo'}
+                      </button>
+                    </td>
+                    <td className="px-6 py-4 text-right space-x-3">
+                      <Link href={`/admin/settings/payment-methods/${pm.id}/edit`} className="text-zinc-500 hover:text-black transition-colors" title="Editar">
+                        <PencilIcon className="w-5 h-5 inline-block" />
+                      </Link>
+                      <button onClick={() => deletePaymentMethod(pm.id)} className="text-zinc-500 hover:text-red-600 transition-colors" title="Eliminar">
+                        <Trash2Icon className="w-5 h-5 inline-block" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+              {paymentMethods.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-zinc-500">No hay métodos de pago registrados</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       {/* Users CRUD Table */}
       <div className="space-y-6 bg-white border border-zinc-200 p-6 md:p-8">
@@ -202,10 +302,10 @@ export default function AdminSettingsPage() {
                   </td>
                   <td className="px-6 py-4 text-right space-x-3">
                     <button className="text-zinc-500 hover:text-black transition-colors" title="Editar">
-                      <Pencil className="w-5 h-5 inline-block" />
+                      <PencilIcon className="w-5 h-5 inline-block" />
                     </button>
                     <button onClick={() => deleteUser(u.id)} className="text-zinc-500 hover:text-red-600 transition-colors" title="Eliminar">
-                      <Trash2 className="w-5 h-5 inline-block" />
+                      <Trash2Icon className="w-5 h-5 inline-block" />
                     </button>
                   </td>
                 </tr>

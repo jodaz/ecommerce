@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Layout } from "lucide-react";
+import { LayoutIcon } from "@/components/core/icons";
 
 export function PublicNavbar() {
   return (
@@ -7,7 +7,7 @@ export function PublicNavbar() {
       <div className="flex items-center gap-2">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-10 h-10 transition-transform group-hover:scale-110 flex items-center justify-center bg-emerald-500 rounded-lg">
-            <Layout className="text-white w-6 h-6" />
+            <LayoutIcon className="text-white w-6 h-6" />
           </div>
           <span className="text-2xl font-bold tracking-tight text-white transition-colors">
             simple<span className="text-emerald-500 group-hover:text-emerald-400 transition-colors">shop</span>

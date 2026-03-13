@@ -4,25 +4,25 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard,
-  ShoppingBag,
-  Package,
-  Settings,
-  LogOut,
-  Store,
-  Menu,
-  X,
-  Tag
-} from 'lucide-react';
+  DashboardIcon,
+  ShoppingBagIcon,
+  PackageIcon,
+  SettingsIcon,
+  LogOutIcon,
+  StoreIcon,
+  MenuIcon,
+  XIcon,
+  TagIcon
+} from '@/components/core/icons';
 import { useAdminStore } from '@/stores/adminStore';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { name: 'Dashboard',     path: '/admin',           icon: LayoutDashboard },
-  { name: 'Pedidos',       path: '/admin/orders',    icon: ShoppingBag },
-  { name: 'Inventario',    path: '/admin/inventory', icon: Package },
-  { name: 'Categorías',    path: '/admin/categories',icon: Tag },
-  { name: 'Configuración', path: '/admin/settings',  icon: Settings },
+  { name: 'Dashboard',     path: '/admin',           icon: DashboardIcon },
+  { name: 'Pedidos',       path: '/admin/orders',    icon: ShoppingBagIcon },
+  { name: 'Inventario',    path: '/admin/inventory', icon: PackageIcon },
+  { name: 'Categorías',    path: '/admin/categories',icon: TagIcon },
+  { name: 'Configuración', path: '/admin/settings',  icon: SettingsIcon },
 ];
 
 export function AdminNavbar() {
@@ -36,7 +36,7 @@ export function AdminNavbar() {
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-900 border-b border-zinc-800 flex items-center justify-between px-4 z-40">
         <div className="flex items-center gap-2 text-white">
           <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
-            <Store className="w-4 h-4 text-white" />
+            <StoreIcon className="w-4 h-4 text-white" />
           </div>
           <span className="text-base font-bold tracking-tight">
             simple<span className="text-emerald-400">shop</span>
@@ -46,7 +46,7 @@ export function AdminNavbar() {
           onClick={() => setIsOpen(true)}
           className="p-2 text-zinc-400 hover:text-white transition-colors"
         >
-          <Menu className="w-6 h-6" />
+          <MenuIcon className="w-6 h-6" />
         </button>
       </div>
 
@@ -67,7 +67,7 @@ export function AdminNavbar() {
         <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-800">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
-              <Store className="w-4 h-4 text-white" />
+              <StoreIcon className="w-4 h-4 text-white" />
             </div>
             <span className="text-base font-bold tracking-tight hidden md:inline-block">
               simple<span className="text-emerald-400">shop</span>
@@ -80,13 +80,13 @@ export function AdminNavbar() {
             className="md:hidden p-2 text-zinc-400 hover:text-white"
             onClick={() => setIsOpen(false)}
           >
-            <X className="w-5 h-5" />
+            <XIcon className="w-5 h-5" />
           </button>
         </div>
 
         {/* Nav links */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {navItems.map(({ name, path, icon: Icon }) => {
+          {navItems.map(({ name, path, icon: IconComponent }) => {
             const isActive =
               path === '/admin'
                 ? pathname === path || pathname === path + '/'
@@ -104,7 +104,7 @@ export function AdminNavbar() {
                     : 'text-zinc-400 hover:bg-white/5 hover:text-white',
                 )}
               >
-                <Icon className="w-4 h-4 shrink-0" />
+                <IconComponent className="w-4 h-4 shrink-0" />
                 {name}
                 {isActive && (
                   <span className="ml-auto w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -126,7 +126,7 @@ export function AdminNavbar() {
             }}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-white/5 hover:text-red-400 transition-colors"
           >
-            <LogOut className="w-4 h-4 shrink-0" />
+            <LogOutIcon className="w-4 h-4 shrink-0" />
             Cerrar sesión
           </button>
         </div>

@@ -1,5 +1,19 @@
 import Link from "next/link";
-import { Check, ChevronRight, Layout, BarChart3, Globe, CreditCard, ShieldCheck, Settings, ShoppingBag, Package, Paintbrush, Coins, ShoppingCart } from "lucide-react";
+import { 
+  CheckIcon, 
+  ChevronRightIcon, 
+  LayoutIcon, 
+  BarChartIcon, 
+  GlobeIcon, 
+  CreditCardIcon, 
+  ShieldCheckIcon, 
+  SettingsIcon, 
+  ShoppingBagIcon, 
+  PackageIcon, 
+  PaintbrushIcon, 
+  CoinsIcon, 
+  ShoppingCartIcon 
+} from "@/components/core/icons";
 import { Metadata } from "next";
 import Image from "next/image";
 import { FaqAccordion } from "@/components/ui/faq-accordion";
@@ -44,18 +58,18 @@ export default function LandingPage() {
             </Link>
             <Link 
               href="http://demo.simpleshop.local:3000/admin" 
-              target="_blank"
+              target="_blank" 
               className="bg-transparent border-2 border-gray-700 text-white hover:border-gray-500 hover:bg-gray-800/50 px-8 py-4 rounded-full font-bold text-lg transition-all flex items-center gap-2"
             >
               Ver demo
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRightIcon className="w-5 h-5" />
             </Link>
           </div>
           
           <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 text-sm text-gray-400">
-            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Control Absoluto</div>
-            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Multimoneda</div>
-            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500" /> Escalabilidad Real</div>
+            <div className="flex items-center gap-2"><CheckIcon className="w-4 h-4 text-emerald-500" /> Control Absoluto</div>
+            <div className="flex items-center gap-2"><CheckIcon className="w-4 h-4 text-emerald-500" /> Multimoneda</div>
+            <div className="flex items-center gap-2"><CheckIcon className="w-4 h-4 text-emerald-500" /> Escalabilidad Real</div>
           </div>
         </section>
 
@@ -69,37 +83,37 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               {
-                icon: <ShoppingBag className="w-6 h-6 text-emerald-400" />,
+                icon: <ShoppingBagIcon className="w-6 h-6 text-emerald-400" />,
                 title: "Gestión de Ventas",
                 desc: "Crea y administra tus ventas con facturación integrada.",
                 points: ["Crear y listar ventas", "Modal de factura", "Seguimiento de estado"]
               },
               {
-                icon: <Package className="w-6 h-6 text-emerald-400" />,
+                icon: <PackageIcon className="w-6 h-6 text-emerald-400" />,
                 title: "Control de Inventario",
                 desc: "Gestiona productos y controla el stock de tu negocio.",
                 points: ["Alta de productos", "Movimientos de stock", "Alertas personalizadas"]
               },
               {
-                icon: <Paintbrush className="w-6 h-6 text-emerald-400" />,
+                icon: <PaintbrushIcon className="w-6 h-6 text-emerald-400" />,
                 title: "Diseño Web Premium",
                 desc: "Transformamos tu visión en una experiencia digital de alto impacto y conversión.",
                 points: ["UI/UX: Interfaces exclusivas", "Performance Extrema", "Narrativa Visual"]
               },
               {
-                icon: <BarChart3 className="w-6 h-6 text-emerald-400" />,
+                icon: <BarChartIcon className="w-6 h-6 text-emerald-400" />,
                 title: "Dashboard y Reportes",
                 desc: "Visualiza el rendimiento de tu negocio en tiempo real.",
                 points: ["Gráficos de ventas", "Productos top", "Actividades recientes"]
               },
               {
-                icon: <Coins className="w-6 h-6 text-emerald-400" />,
+                icon: <CoinsIcon className="w-6 h-6 text-emerald-400" />,
                 title: "Multi-Moneda",
                 desc: "Opera con diferentes monedas y tasas de cambio.",
                 points: ["Moneda principal", "Tasa de cambio", "Conversión automática"]
               },
               {
-                icon: <ShoppingCart className="w-6 h-6 text-emerald-400" />,
+                icon: <ShoppingCartIcon className="w-6 h-6 text-emerald-400" />,
                 title: "E-commerce Integrado",
                 desc: "Crea tu tienda online y recibe pedidos por WhatsApp.",
                 points: ["Catálogos virtuales", "Gestión de pedidos", "Links de pago"]

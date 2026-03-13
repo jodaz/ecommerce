@@ -16,6 +16,16 @@ export interface Category {
   has_page: boolean;
 }
 
+export type PaymentMethodType = 'PayPal' | 'Zelle' | 'Binance' | 'Pago Móvil' | 'Transferencia Bancaria';
+
+export interface PaymentMethod {
+  id: string;
+  type: PaymentMethodType;
+  label: string;
+  details: string;
+  isActive: boolean;
+}
+
 interface AdminState {
   // Auth
   isAuthenticated: boolean;
@@ -34,6 +44,12 @@ interface AdminState {
   addCategory: (category: Omit<Category, 'id'>) => void;
   updateCategory: (id: string, category: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
+
+  // Payment Methods
+  paymentMethods: PaymentMethod[];
+  addPaymentMethod: (pm: Omit<PaymentMethod, 'id'>) => void;
+  updatePaymentMethod: (id: string, pm: Partial<PaymentMethod>) => void;
+  deletePaymentMethod: (id: string) => void;
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -51,6 +67,10 @@ export const useAdminStore = create<AdminState>()(
         { id: '1', name: 'Línea Blanca', has_page: true },
         { id: '2', name: 'Electrónica', has_page: true },
         { id: '3', name: 'Hogar', has_page: false },
+      ],
+      paymentMethods: [
+        { id: '1', type: 'Zelle', label: 'Zelle Principal', details: 'pagos@ejemplo.com', isActive: true },
+        { id: '2', type: 'Pago Móvil', label: 'Banesco', details: '0412-1234567, V-12345678, 0102', isActive: true },
       ],
 
       // AUTH ACTIONS
@@ -77,6 +97,17 @@ export const useAdminStore = create<AdminState>()(
       })),
       deleteCategory: (id) => set((state) => ({
         categories: state.categories.filter(c => c.id !== id)
+      })),
+
+      // PAYMENT METHOD ACTIONS
+      addPaymentMethod: (pm) => set((state) => ({
+        paymentMethods: [...state.paymentMethods, { ...pm, id: Math.random().toString(36).substr(2, 9) }]
+      })),
+      updatePaymentMethod: (id, updatedFields) => set((state) => ({
+        paymentMethods: state.paymentMethods.map(p => p.id === id ? { ...p, ...updatedFields } : p)
+      })),
+      deletePaymentMethod: (id) => set((state) => ({
+        paymentMethods: state.paymentMethods.filter(p => p.id !== id)
       })),
     }),
     {
