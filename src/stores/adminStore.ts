@@ -1,13 +1,55 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type UserRole = 'Admin' | 'Editor';
+export type UserRole = 'owner' | 'administrative';
 
-export interface User {
+export interface Profile {
+  id: string;
+  business_id: string | null;
+  full_name: string;
+  role: UserRole;
+  assigned_store_id: string | null;
+}
+
+export interface Business {
   id: string;
   name: string;
-  email: string;
-  role: UserRole;
+  slug: string;
+  logo_url?: string;
+}
+
+export interface BusinessSettings {
+  business_id: string;
+  description: string;
+  facebook_url: string;
+  instagram_url: string;
+  tiktok_url: string;
+  twitter_url: string;
+  whatsapp_number: string;
+  support_email: string;
+  currency_code: string;
+  theme_config: any;
+}
+
+export type PaymentMethodType = 'PayPal' | 'Zelle' | 'Binance' | 'Pago Móvil' | 'Transferencia Bancaria';
+
+export interface BusinessPaymentMethod {
+  id: string;
+  business_id: string;
+  type: PaymentMethodType;
+  label: string;
+  details: string;
+  isActive: boolean;
+}
+
+export interface Store {
+  id: string;
+  business_id: string;
+  name: string;
+  address: string;
+  phone: string;
+  is_main: boolean;
+  is_active: boolean;
 }
 
 export interface Category {
@@ -16,28 +58,30 @@ export interface Category {
   has_page: boolean;
 }
 
-export type PaymentMethodType = 'PayPal' | 'Zelle' | 'Binance' | 'Pago Móvil' | 'Transferencia Bancaria';
-
-export interface PaymentMethod {
-  id: string;
-  type: PaymentMethodType;
-  label: string;
-  details: string;
-  isActive: boolean;
-}
-
 interface AdminState {
-  // Auth
+  // Auth & Context
   isAuthenticated: boolean;
-  currentUser: User | null;
-  login: (user: User) => void;
+  currentProfile: Profile | null;
+  activeBusiness: Business | null;
+  businessSettings: BusinessSettings | null;
+  activeStore: Store | null;
+  
+  login: (profile: Profile, business: Business | null, settings: BusinessSettings | null) => void;
   logout: () => void;
+  setActiveStore: (store: Store) => void;
+  updateBusinessSettings: (settings: Partial<BusinessSettings>) => void;
 
-  // Users
-  users: User[];
-  addUser: (user: Omit<User, 'id'>) => void;
-  updateUser: (id: string, user: Partial<User>) => void;
-  deleteUser: (id: string) => void;
+  // Stores (Branches)
+  stores: Store[];
+  addStore: (store: Omit<Store, 'id'>) => void;
+  updateStore: (id: string, store: Partial<Store>) => void;
+  deleteStore: (id: string) => void;
+
+  // Users (Profiles)
+  profiles: Profile[];
+  addProfile: (profile: Omit<Profile, 'id'>) => void;
+  updateProfile: (id: string, profile: Partial<Profile>) => void;
+  deleteProfile: (id: string) => void;
 
   // Categories
   categories: Category[];
@@ -45,11 +89,11 @@ interface AdminState {
   updateCategory: (id: string, category: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
 
-  // Payment Methods
-  paymentMethods: PaymentMethod[];
-  addPaymentMethod: (pm: Omit<PaymentMethod, 'id'>) => void;
-  updatePaymentMethod: (id: string, pm: Partial<PaymentMethod>) => void;
-  deletePaymentMethod: (id: string) => void;
+  // Business Payment Methods
+  businessPaymentMethods: BusinessPaymentMethod[];
+  addBusinessPaymentMethod: (pm: Omit<BusinessPaymentMethod, 'id'>) => void;
+  updateBusinessPaymentMethod: (id: string, pm: Partial<BusinessPaymentMethod>) => void;
+  deleteBusinessPaymentMethod: (id: string) => void;
 }
 
 export const useAdminStore = create<AdminState>()(
@@ -57,35 +101,60 @@ export const useAdminStore = create<AdminState>()(
     (set) => ({
       // INITIAL STATE
       isAuthenticated: false,
-      currentUser: null,
+      currentProfile: null,
+      activeBusiness: null,
+      businessSettings: null,
+      activeStore: null,
       
       // Default dummy data for showcase
-      users: [
-        { id: '1', name: 'Admin Principal', email: 'admin@megaimport.com', role: 'Admin' }
+      profiles: [
+        { id: '1', business_id: 'b1', full_name: 'Admin Demo', role: 'owner', assigned_store_id: null }
+      ],
+      stores: [
+        { id: 's1', business_id: 'b1', name: 'Sucursal Central', address: 'Caracas', phone: '0412', is_main: true, is_active: true },
+        { id: 's2', business_id: 'b1', name: 'Sucursal Express', address: 'Chacao', phone: '0414', is_main: false, is_active: true },
       ],
       categories: [
         { id: '1', name: 'Línea Blanca', has_page: true },
         { id: '2', name: 'Electrónica', has_page: true },
-        { id: '3', name: 'Hogar', has_page: false },
       ],
-      paymentMethods: [
-        { id: '1', type: 'Zelle', label: 'Zelle Principal', details: 'pagos@ejemplo.com', isActive: true },
-        { id: '2', type: 'Pago Móvil', label: 'Banesco', details: '0412-1234567, V-12345678, 0102', isActive: true },
+      businessPaymentMethods: [
+        { id: '1', business_id: 'b1', type: 'Zelle', label: 'Zelle Principal', details: 'pagos@ejemplo.com', isActive: true },
       ],
 
-      // AUTH ACTIONS
-      login: (user) => set({ isAuthenticated: true, currentUser: user }),
-      logout: () => set({ isAuthenticated: false, currentUser: null }),
+      // CONTEXT ACTIONS
+      login: (profile, business, settings) => set({ 
+        isAuthenticated: true, 
+        currentProfile: profile, 
+        activeBusiness: business,
+        businessSettings: settings
+      }),
+      logout: () => set({ isAuthenticated: false, currentProfile: null, activeBusiness: null, businessSettings: null, activeStore: null }),
+      setActiveStore: (store) => set({ activeStore: store }),
+      updateBusinessSettings: (updatedFields) => set((state) => ({
+        businessSettings: state.businessSettings ? { ...state.businessSettings, ...updatedFields } : null
+      })),
 
-      // USER ACTIONS
-      addUser: (user) => set((state) => ({
-        users: [...state.users, { ...user, id: Math.random().toString(36).substr(2, 9) }]
+      // STORE ACTIONS
+      addStore: (store) => set((state) => ({
+        stores: [...state.stores, { ...store, id: Math.random().toString(36).substr(2, 9) }]
       })),
-      updateUser: (id, updatedFields) => set((state) => ({
-        users: state.users.map(u => u.id === id ? { ...u, ...updatedFields } : u)
+      updateStore: (id, updatedFields) => set((state) => ({
+        stores: state.stores.map(s => s.id === id ? { ...s, ...updatedFields } : s)
       })),
-      deleteUser: (id) => set((state) => ({
-        users: state.users.filter(u => u.id !== id)
+      deleteStore: (id) => set((state) => ({
+        stores: state.stores.filter(s => s.id !== id)
+      })),
+
+      // PROFILE ACTIONS
+      addProfile: (profile) => set((state) => ({
+        profiles: [...state.profiles, { ...profile, id: Math.random().toString(36).substr(2, 9) }]
+      })),
+      updateProfile: (id, updatedFields) => set((state) => ({
+        profiles: state.profiles.map(p => p.id === id ? { ...p, ...updatedFields } : p)
+      })),
+      deleteProfile: (id) => set((state) => ({
+        profiles: state.profiles.filter(p => p.id !== id)
       })),
 
       // CATEGORY ACTIONS
@@ -99,15 +168,15 @@ export const useAdminStore = create<AdminState>()(
         categories: state.categories.filter(c => c.id !== id)
       })),
 
-      // PAYMENT METHOD ACTIONS
-      addPaymentMethod: (pm) => set((state) => ({
-        paymentMethods: [...state.paymentMethods, { ...pm, id: Math.random().toString(36).substr(2, 9) }]
+      // BUSINESS PAYMENT METHOD ACTIONS
+      addBusinessPaymentMethod: (pm) => set((state) => ({
+        businessPaymentMethods: [...state.businessPaymentMethods, { ...pm, id: Math.random().toString(36).substr(2, 9) }]
       })),
-      updatePaymentMethod: (id, updatedFields) => set((state) => ({
-        paymentMethods: state.paymentMethods.map(p => p.id === id ? { ...p, ...updatedFields } : p)
+      updateBusinessPaymentMethod: (id, updatedFields) => set((state) => ({
+        businessPaymentMethods: state.businessPaymentMethods.map(p => p.id === id ? { ...p, ...updatedFields } : p)
       })),
-      deletePaymentMethod: (id) => set((state) => ({
-        paymentMethods: state.paymentMethods.filter(p => p.id !== id)
+      deleteBusinessPaymentMethod: (id) => set((state) => ({
+        businessPaymentMethods: state.businessPaymentMethods.filter(p => p.id !== id)
       })),
     }),
     {
