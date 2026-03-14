@@ -28,7 +28,7 @@ const navItems = [
 
 export function AdminNavbar() {
   const pathname  = usePathname();
-  const { logout } = useAdminStore();
+  const { logout, activeSubscription } = useAdminStore();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -66,16 +66,32 @@ export function AdminNavbar() {
       )}>
         {/* Brand (Desktop) / Mobile Close Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-zinc-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
-              <StoreIcon className="w-4 h-4 text-white" />
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shrink-0">
+                <StoreIcon className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-base font-bold tracking-tight hidden md:inline-block uppercase tracking-tighter">
+                simple<span className="text-emerald-400">shop</span>
+              </span>
+              <span className="text-base font-bold tracking-tight md:hidden">
+                Menú
+              </span>
             </div>
-            <span className="text-base font-bold tracking-tight hidden md:inline-block uppercase tracking-tighter">
-              simple<span className="text-emerald-400">shop</span>
-            </span>
-            <span className="text-base font-bold tracking-tight md:hidden">
-              Menú
-            </span>
+            
+            {/* Subscription Tag */}
+            {activeSubscription && (
+              <div className="mt-1">
+                <span className={cn(
+                  "px-2 py-0.5 text-[9px] font-black uppercase tracking-[0.15em] border rounded-none inline-block",
+                  activeSubscription.plan_name === 'Empresarial' 
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" 
+                    : "bg-zinc-500/10 text-zinc-400 border-zinc-500/30"
+                )}>
+                  Plan {activeSubscription.plan_name}
+                </span>
+              </div>
+            )}
           </div>
           <button 
             className="md:hidden p-2 text-zinc-400 hover:text-white"

@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getBusinessRole, isPlatformAdmin } from '@/lib/supabase/rbac';
-import { AdminNavbar } from '~features/admin/components/AdminNavbar';
-
+import { AdminNavbar } from '@/features/admin/components/AdminNavbar';
 import { getBusinessBySlug } from '@/lib/api/business';
+import { AdminStoreHydrator } from '@/features/admin/components/AdminStoreHydrator';
 
 export const metadata: Metadata = {
   title: 'Panel de Administración | simpleshop',
@@ -31,6 +31,24 @@ export default async function AdminLayout({
     );
   }
 
+  // Get current user and profile
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/admin/login');
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile) {
+    redirect('/admin/login?error=no_profile');
+  }
+
   // Valida la autorización del lado del servidor vía RBAC
   const [role, isSuper] = await Promise.all([
     getBusinessRole(business.id),
@@ -43,6 +61,12 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-screen bg-zinc-100 text-zinc-900">
+      <AdminStoreHydrator 
+        profile={{...profile, role: profile.role as any}} 
+        business={business as any} 
+        settings={business.business_settings as any}
+        subscription={business.active_subscription as any}
+      />
       <AdminNavbar />
       <main className="flex-1 md:ml-56 pt-16 md:pt-0 min-h-screen overflow-auto">
         <div className="p-4 md:p-8">

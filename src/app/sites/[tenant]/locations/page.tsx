@@ -29,7 +29,7 @@ export default async function LocationsPage({ params }: { params: Promise<{ tena
               name={loc.name} 
               address={loc.address || ''} 
               phone={loc.phone || undefined}
-              isMain={loc.is_main}
+              isMain={loc.is_main || undefined}
             />
           ))}
         </div>

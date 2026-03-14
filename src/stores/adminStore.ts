@@ -59,18 +59,28 @@ export interface Category {
   has_page: boolean;
 }
 
+export interface Subscription {
+  plan_id: string;
+  plan_name: string;
+  status: 'active' | 'expired' | 'pending_activation' | 'cancelled';
+  end_date: string | null;
+  max_stores: number;
+}
+
 interface AdminState {
   // Auth & Context
   isAuthenticated: boolean;
   currentProfile: Profile | null;
   activeBusiness: Business | null;
   businessSettings: BusinessSettings | null;
+  activeSubscription: Subscription | null;
   activeStore: Store | null;
   
-  login: (profile: Profile, business: Business | null, settings: BusinessSettings | null) => void;
+  login: (profile: Profile, business: Business | null, settings: BusinessSettings | null, subscription?: Subscription | null) => void;
   logout: () => void;
   setActiveStore: (store: Store) => void;
   updateBusinessSettings: (settings: Partial<BusinessSettings>) => void;
+  setSubscription: (subscription: Subscription | null) => void;
 
   // Stores (Branches)
   stores: Store[];
@@ -99,6 +109,7 @@ export const useAdminStore = create<AdminState>()(
       currentProfile: null,
       activeBusiness: null,
       businessSettings: null,
+      activeSubscription: null,
       activeStore: null,
       
       // Default dummy data for showcase
@@ -115,17 +126,26 @@ export const useAdminStore = create<AdminState>()(
       ],
 
       // CONTEXT ACTIONS
-      login: (profile, business, settings) => set({ 
+      login: (profile, business, settings, subscription) => set({ 
         isAuthenticated: true, 
         currentProfile: profile, 
         activeBusiness: business,
-        businessSettings: settings
+        businessSettings: settings,
+        activeSubscription: subscription || null
       }),
-      logout: () => set({ isAuthenticated: false, currentProfile: null, activeBusiness: null, businessSettings: null, activeStore: null }),
+      logout: () => set({ 
+        isAuthenticated: false, 
+        currentProfile: null, 
+        activeBusiness: null, 
+        businessSettings: null, 
+        activeSubscription: null,
+        activeStore: null 
+      }),
       setActiveStore: (store) => set({ activeStore: store }),
       updateBusinessSettings: (updatedFields) => set((state) => ({
         businessSettings: state.businessSettings ? { ...state.businessSettings, ...updatedFields } : null
       })),
+      setSubscription: (subscription) => set({ activeSubscription: subscription }),
 
       // STORE ACTIONS
       addStore: (store) => set((state) => ({

@@ -27,6 +27,16 @@ export async function getBusinessBySlug(slug: string) {
         phone,
         is_main,
         is_active
+      ),
+      business_subscriptions (
+        status,
+        end_date,
+        plan_id,
+        plans (
+          id,
+          name,
+          max_stores
+        )
       )
     `)
     .eq('slug', slug)
@@ -44,12 +54,26 @@ export async function getBusinessBySlug(slug: string) {
     console.warn('DB API: No settings found for business:', business.id);
   }
 
+  // Find active subscription
+  const subscriptions = (business as any).business_subscriptions || [];
+  const activeSub = subscriptions.find((sub: any) => sub.status === 'active');
+
+  const subscription = activeSub ? {
+    plan_id: activeSub.plans.id,
+    plan_name: activeSub.plans.name,
+    status: activeSub.status,
+    end_date: activeSub.end_date,
+    max_stores: activeSub.plans.max_stores
+  } : null;
+
   // Find the primary store for inventory defaults if needed
-  const mainStore = business.stores.find((s: any) => s.is_main) || business.stores[0];
+  const stores = (business as any).stores || [];
+  const mainStore = stores.find((s: any) => s.is_main) || stores[0];
 
   return {
     ...business,
-    main_store: mainStore
+    main_store: mainStore,
+    active_subscription: subscription
   };
 }
 

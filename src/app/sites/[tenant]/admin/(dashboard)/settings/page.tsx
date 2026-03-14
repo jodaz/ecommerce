@@ -69,45 +69,7 @@ export default function AdminSettingsPage() {
     },
   });
 
-  // Hydrate store if needed
-  useEffect(() => {
-    const hydrateStore = async () => {
-      if ((!activeBusiness || !businessSettings) && tenant) {
-        setIsLoadingData(true);
-        try {
-          console.log('Hydrating store for tenant:', tenant);
-          const res = await fetch(`/api/businesses?slug=${tenant}`);
-          if (res.ok) {
-            const data = await res.json();
-            
-            // We need current profile too. 
-            const { createClient } = await import('@/lib/supabase/client');
-            const supabase = createClient();
-            const { data: { user } } = await supabase.auth.getUser();
-            
-            if (user) {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id)
-                .single();
-              
-              if (profile) {
-                login(profile, data, data.business_settings || null);
-              }
-            }
-          }
-        } catch (error) {
-          console.error('Error hydrating store:', error);
-        } finally {
-          setIsLoadingData(false);
-        }
-      }
-    };
-
-    hydrateStore();
-  }, [activeBusiness, businessSettings, login, tenant]);
-
+  // Sync form with store data when it changes
   useEffect(() => {
     // Only reset form if not currently editing to prevent wiping user input
     if (!isEditingProfile && (activeBusiness || businessSettings)) {
@@ -195,7 +157,8 @@ export default function AdminSettingsPage() {
       login(
         currentState.currentProfile!, 
         updatedBusiness as any, 
-        updatedSettings as any
+        updatedSettings as any,
+        currentState.activeSubscription
       );
 
       setIsEditingProfile(false);

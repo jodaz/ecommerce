@@ -4,6 +4,7 @@ Este archivo sirve como contexto fundamental para todas las interacciones de IA 
 
 ## 🏗️ Resumen del Proyecto
 - **Propósito:** Catálogos de e-commerce de alto rendimiento con aislamiento por dominios/subdominios.
+- **Suscripciones:** Sistema de planes ("Emprendedor", "Empresarial") que limita el número de sucursales permitidas.
 - **Público Objetivo:** Negocios en Venezuela que necesitan una presencia digital unificada con pagos localizados.
 - **Arquitectura:** Multi-tenant basado en slugs (`/sites/[tenant]`). Los requests son reescritos por middleware.
 - **Idioma Principal:** **Español 🇻🇪**. Todo el contenido orientado al usuario, mensajes de error y comentarios internos deben estar en español.
@@ -20,11 +21,11 @@ Este archivo sirve como contexto fundamental para todas las interacciones de IA 
 ## 📁 Estructura de Directorios Clave
 - `src/app/sites/[tenant]/`: Lógica de página específica del tenant (Shopfront y Store Admin).
 - `src/app/sites/[tenant]/admin/`: Dashboard administrativo para el dueño de la tienda.
-- `src/app/api/`: Endpoints de backend. **Nota:** Los Client Components no deben consultar Supabase directamente.
+- `src/app/api/`: Endpoints de backend (Admin, Auth, Businesses, Products, Orders, etc.). **Nota:** Los Client Components no deben consultar Supabase directamente.
 - `src/lib/api/`: Funciones de servicio que encapsulan la lógica de negocio y DB.
-- `src/features/`: Módulos de negocio (Inventario, Onboarding, etc.).
-- `src/components/ui/`: Componentes de interfaz compartidos (ej: `PriceDisplay`).
-- `supabase/migrations/`: Gestión del esquema de base de datos.
+- `src/features/`: Módulos de negocio (Inventario, Onboarding, Órdenes, etc.).
+- `src/components/ui/`: Componentes de interfaz compartidos (ej: `PriceDisplay`, `LocationCard`).
+- `supabase/migrations/`: Gestión del esquema de base de datos y políticas RLS.
 
 ## 🎨 Convenciones de Diseño (MegaImport Aesthetic)
 - **Tema:** Alto contraste, blanco y negro.
@@ -37,10 +38,13 @@ Este archivo sirve como contexto fundamental para todas las interacciones de IA 
 - **Build:** `pnpm build`
 - **Linting:** `pnpm lint`
 - **Type Checking:** `pnpm tsc`
+- **DB Push:** `supabase db push` (requiere CLI vinculado).
 
 ## ⚠️ Reglas de Oro
 1. **Seguridad:** Nunca expongas secretos o claves de API. Protege archivos `.env` y la carpeta `.git`.
 2. **Multi-tenancy:** Siempre valida que los datos consultados pertenezcan al `business_id` del tenant actual.
-3. **Backend-First:** Prefiere Server Components para el fetch de datos inicial.
-4. **Localización:** Los precios deben poder mostrarse tanto en USD como en VES (usando tasas de cambio actualizadas, usualmente vía `akomo.xyz`).
-5. **No staging/commit:** No realices `git add` ni `git commit` a menos que se te pida explícitamente.
+3. **Límites de Plan:** Al crear sucursales, se debe verificar el plan actual del negocio para hacer cumplir el límite (`max_stores`).
+4. **Backend-First:** Prefiere Server Components para el fetch de datos inicial.
+5. **Localización:** Los precios deben poder mostrarse tanto en USD como en VES (usando tasas de cambio actualizadas).
+6. **No staging/commit:** No realices `git add` ni `git commit` a menos que se te pida explícitamente.
+

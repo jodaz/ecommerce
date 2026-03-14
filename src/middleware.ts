@@ -30,11 +30,17 @@ export default async function middleware(req: NextRequest) {
   // Determina el ID del tenant (tienda)
   let tenantId = currentHost;
 
+  console.log('--- Middleware Debug ---');
+  console.log('currentHost:', currentHost);
+  console.log('rootDomain:', rootDomain);
+
   // Si la petición es un subdominio de nuestro dominio raíz (ej., tienda.localhost o tienda.misaas.com)
   // extraemos solo el nombre del subdominio. De lo contrario, pasará el dominio personalizado completo (mitienda.com)
   if (currentHost.endsWith(`.${rootDomain}`)) {
     tenantId = currentHost.replace(`.${rootDomain}`, '');
   }
+
+  console.log('tenantId:', tenantId);
 
   // Prepara la respuesta que vamos a modificar
   const path = url.pathname === "/" ? "" : url.pathname;

@@ -3,6 +3,12 @@
 ## Project Overview
 SimpleShop is a high-performance, multi-tenant SaaS e-commerce platform designed for the Venezuelan market. It enables business owners to manage multiple physical stores, unified business settings, and localized payment methods (Zelle, Pago Móvil, etc.) under a single business entity.
 
+### Key Features
+- **Multi-tenancy:** Domain/Subdomain based isolation with shared core infrastructure.
+- **Subscription System:** Multi-tier plans ("Emprendedor", "Empresarial") managing store limits and billing cycles.
+- **Localized Payments:** Support for Venezuelan payment methods (Pago Móvil, Zelle).
+- **Inventory Management:** Centralized product catalogs with per-store stock levels and adjustment logs.
+
 ### Tech Stack
 - **Framework:** Next.js 16.1.1 (Turbopack enabled)
 - **Runtime:** Node.js (Latest LTS recommended)
@@ -17,6 +23,7 @@ SimpleShop is a high-performance, multi-tenant SaaS e-commerce platform designed
 - **Multi-tenancy:** Domain/Subdomain based isolation. Middleware rewrites requests from `tenant.simpleshop.xyz` to `src/app/sites/[tenant]/...`.
 - **RBAC:** Scoped roles (`owner`, `administrative`) linked to specific businesses and stores.
 - **API Strategy:** Database operations are abstracted into Next.js App Router API routes (`src/app/api/...`). UI Client Components must NOT query Supabase directly.
+- **Subscription Logic:** Plan status is calculated on-the-fly using historical records in `business_subscriptions`.
 
 ## Building and Running
 
@@ -42,6 +49,7 @@ pnpm tsc
 Schema is managed via Supabase migrations in `supabase/migrations/`.
 - `supabase_schema.sql`: Reference snapshot of the base schema.
 - `seed.sql`: Initial seed data for development.
+- `seed_demo.sql`: Demo data for local testing.
 
 ## Development Conventions
 
@@ -61,8 +69,9 @@ Schema is managed via Supabase migrations in `supabase/migrations/`.
 
 ## Key Directory Structure
 - `.agent/`: Custom instructions, rules, and skills for AI agents.
-- `src/app/api/`: Backend endpoints.
-- `src/app/sites/[tenant]/`: Tenant-specific page logic (The "Shopfront" and "Store Admin").
-- `src/features/`: Modularized business features (Onboarding, Inventory, etc.).
-- `src/stores/`: Client-side Zustand stores (e.g., `adminStore.ts`).
+- `src/app/api/`: Backend endpoints (Auth, Admin, Businesses, Products, Orders, etc.).
+- `src/app/sites/[tenant]/`: Tenant-specific page logic (Shopfront and Store Admin).
+- `src/features/`: Modularized business features (Onboarding, Inventory, Admin Dashboard).
+- `src/stores/`: Client-side Zustand stores (e.g., `adminStore.ts`, `cartStore.ts`).
 - `src/types/`: Centralized TypeScript interfaces and Database definitions.
+- `docs/`: Architecture diagrams, implementation plans, and decision logs.
