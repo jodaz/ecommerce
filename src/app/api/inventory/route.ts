@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       image_url,
       store_inventory (
         store_id,
-        quantity
+        stock
       )
     `)
     .eq('business_id', businessId);
@@ -45,13 +45,13 @@ export async function GET(request: Request) {
 
   interface InventoryRecord {
     store_id: string;
-    quantity: number;
+    stock: number;
   }
 
-  // 3. Map inventory data to include all stores (even if quantity is 0 or missing)
+  // 3. Map inventory data to include all stores (even if stock is 0 or missing)
   const result = products.map(product => {
     const inventoryMap = new Map<string, number>(
-      (product.store_inventory as unknown as InventoryRecord[])?.map((inv) => [inv.store_id, inv.quantity]) || []
+      (product.store_inventory as unknown as InventoryRecord[])?.map((inv) => [inv.store_id, inv.stock]) || []
     );
 
     return {

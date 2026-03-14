@@ -313,19 +313,19 @@ export interface Database {
           id: string
           store_id: string
           product_id: string
-          quantity: number
+          stock: number
         }
         Insert: {
           id?: string
           store_id: string
           product_id: string
-          quantity: number
+          stock: number
         }
         Update: {
           id?: string
           store_id?: string
           product_id?: string
-          quantity?: number
+          stock?: number
         }
         Relationships: [
           {
@@ -364,6 +364,179 @@ export interface Database {
           last_synced_at?: string
         }
         Relationships: []
+      }
+      business_orders: {
+        Row: {
+          id: string
+          business_id: string
+          customer_name: string
+          customer_id_number: string
+          customer_phone: string
+          customer_address: string
+          total_amount: number
+          payment_method_id: string | null
+          payment_reference: string | null
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          customer_name: string
+          customer_id_number: string
+          customer_phone: string
+          customer_address: string
+          total_amount: number
+          payment_method_id?: string | null
+          payment_reference?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          business_id?: string
+          customer_name?: string
+          customer_id_number?: string
+          customer_phone?: string
+          customer_address?: string
+          total_amount?: number
+          payment_method_id?: string | null
+          payment_reference?: string | null
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_orders_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_orders_payment_method_id_fkey"
+            columns: ["payment_method_id"]
+            isOneToOne: false
+            referencedRelation: "business_payment_methods"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      business_order_items: {
+        Row: {
+          id: string
+          order_id: string
+          product_id: string
+          quantity: number
+          unit_price: number
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          product_id: string
+          quantity: number
+          unit_price: number
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          product_id?: string
+          quantity?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "business_order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "business_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "business_order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "business_products"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      inventory_logs: {
+        Row: {
+          id: string
+          business_id: string
+          store_id: string
+          product_id: string
+          order_id: string | null
+          user_id: string | null
+          change_amount: number
+          previous_quantity: number
+          new_quantity: number
+          reason: string
+          metadata: Json | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          business_id: string
+          store_id: string
+          product_id: string
+          order_id?: string | null
+          user_id?: string | null
+          change_amount: number
+          previous_quantity: number
+          new_quantity: number
+          reason: string
+          metadata?: Json | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          business_id?: string
+          store_id?: string
+          product_id?: string
+          order_id?: string | null
+          user_id?: string | null
+          change_amount?: number
+          previous_quantity?: number
+          new_quantity?: number
+          reason?: string
+          metadata?: Json | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_logs_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_logs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "business_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "business_orders"
+            referencedColumns: ["id"]
+          }
+        ]
       }
     }
     Views: {

@@ -98,12 +98,12 @@ export async function POST(request: Request) {
     for (const item of itemsList) {
       const { data: inventory } = await supabase
         .from('store_inventory')
-        .select('quantity')
+        .select('stock')
         .eq('store_id', mainStore.id)
         .eq('product_id', item.id)
         .single();
 
-      const currentStock = inventory?.quantity || 0;
+      const currentStock = inventory?.stock || 0;
       const newStock = currentStock - item.quantity;
 
       await supabase
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
         .upsert({
           store_id: mainStore.id,
           product_id: item.id,
-          quantity: newStock
+          stock: newStock
         });
 
       await supabase

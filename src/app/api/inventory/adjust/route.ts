@@ -21,12 +21,12 @@ export async function POST(request: Request) {
   // 1. Get current quantity
   const { data: inventory } = await supabase
     .from('store_inventory')
-    .select('quantity')
+    .select('stock')
     .eq('store_id', store_id)
     .eq('product_id', product_id)
     .single();
 
-  const currentQuantity = inventory?.quantity || 0;
+  const currentQuantity = inventory?.stock || 0;
   const newQuantity = currentQuantity + change_amount;
 
   if (newQuantity < 0) {
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     .upsert({
       store_id,
       product_id,
-      quantity: newQuantity
+      stock: newQuantity
     });
 
   if (upsertError) return NextResponse.json({ error: upsertError.message }, { status: 500 });

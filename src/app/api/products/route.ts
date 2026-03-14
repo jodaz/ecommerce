@@ -19,7 +19,7 @@ export async function GET(request: Request) {
         name
       ),
       store_inventory (
-        quantity
+        stock
       )
     `)
     .eq('business_id', businessId)
@@ -29,7 +29,7 @@ export async function GET(request: Request) {
   
   const products = data.map((p: any) => ({
     ...p,
-    stock: p.store_inventory?.reduce((sum: number, inv: any) => sum + (inv.quantity || 0), 0) || 0,
+    stock: p.store_inventory?.reduce((sum: number, inv: any) => sum + (inv.stock || 0), 0) || 0,
     store_inventory: undefined // hide inner relation
   }));
   
@@ -38,7 +38,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const body = await request.json();
-  const { stock, ...productData } = body;
+  const { stock, price, ...restProductData } = body;
+  
+  const productData = {
+    ...restProductData,
+    base_price: price,
+  };
   
   const supabase = await createClient();
   
@@ -50,20 +55,31 @@ export async function POST(request: Request) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   
-  if (stock !== undefined && productData.business_id) {
-    const { data: store } = await supabase
+  if (stock !== undefined && product.business_id) {
+    let { data: store } = await supabase
       .from('stores')
       .select('id')
-      .eq('business_id', productData.business_id)
+      .eq('business_id', product.business_id)
       .eq('is_main', true)
-      .single();
+      .maybeSingle();
+      
+    if (!store) {
+      const { data: fallbackStore } = await supabase
+        .from('stores')
+        .select('id')
+        .eq('business_id', product.business_id)
+        .limit(1)
+        .maybeSingle();
+      store = fallbackStore;
+    }
       
     if (store) {
-      await supabase.from('store_inventory').insert([{
+      const { error: invError } = await supabase.from('store_inventory').upsert({
         store_id: store.id,
         product_id: product.id,
-        quantity: stock
-      }]);
+        stock: stock
+      });
+      if (invError) return NextResponse.json({ error: invError.message }, { status: 500 });
     }
   }
 

@@ -114,18 +114,16 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- 7. Add inventory records for the products in the main store
-INSERT INTO public.store_inventory (id, store_id, product_id, quantity)
-VALUES 
+INSERT INTO public.store_inventory (store_id, product_id, stock)
+VALUES
 (
-    '55555555-5555-5555-5555-555555555551',
     '22222222-2222-2222-2222-222222222222',
     '44444444-4444-4444-4444-444444444441',
     50
 ),
 (
-    '55555555-5555-5555-5555-555555555552',
     '22222222-2222-2222-2222-222222222222',
     '44444444-4444-4444-4444-444444444442',
     100
 )
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (store_id, product_id) DO NOTHING;
