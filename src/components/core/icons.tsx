@@ -3,7 +3,7 @@
 import { Icon as Iconify } from '@iconify/react';
 import { cn } from '@/lib/utils';
 
-interface IconProps extends React.ComponentPropsWithoutRef<'svg'> {
+interface IconProps extends React.SVGAttributes<SVGElement> {
   icon: string;
 }
 
@@ -12,7 +12,7 @@ export function Icon({ icon, className, ...props }: IconProps) {
     <Iconify
       icon={icon}
       className={cn('h-4 w-4 shrink-0', className)}
-      {...props}
+      {...(props as any)}
     />
   );
 }

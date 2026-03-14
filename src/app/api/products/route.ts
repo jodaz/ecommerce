@@ -52,7 +52,7 @@ export async function POST(request: Request) {
   
   if (stock !== undefined && productData.business_id) {
     const { data: store } = await supabase
-      .from('businesses_stores')
+      .from('stores')
       .select('id')
       .eq('business_id', productData.business_id)
       .eq('is_main', true)

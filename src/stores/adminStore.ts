@@ -6,7 +6,7 @@ export type UserRole = 'owner' | 'administrative';
 export interface Profile {
   id: string;
   business_id: string | null;
-  full_name: string;
+  full_name: string | null;
   role: UserRole;
   assigned_store_id: string | null;
 }

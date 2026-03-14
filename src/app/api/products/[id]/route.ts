@@ -50,7 +50,7 @@ export async function PUT(
   
   if (stock !== undefined && product.business_id) {
     const { data: store } = await supabase
-      .from('businesses_stores')
+      .from('stores')
       .select('id')
       .eq('business_id', product.business_id)
       .eq('is_main', true)

@@ -18,7 +18,7 @@ export function TenantLayoutClient({ children, business }: TenantLayoutClientPro
     return (
       <>
         {children}
-        <Toaster position="top-right" expand={false} richColors={false} />
+        <Toaster position="top-right" expand={false} richColors={false} duration={3000} />
       </>
     );
   }
@@ -30,7 +30,7 @@ export function TenantLayoutClient({ children, business }: TenantLayoutClientPro
         {children}
       </main>
       <Footer business={business} />
-      <Toaster position="top-right" expand={false} richColors={false} />
+      <Toaster position="top-right" expand={false} richColors={false} duration={3000} />
     </>
   );
 }

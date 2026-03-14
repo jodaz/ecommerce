@@ -21,7 +21,7 @@ type UserFormValues = z.infer<typeof userSchema>;
 
 export default function CreateUserPage() {
   const router = useRouter();
-  const { addUser } = useAdminStore();
+  const { addProfile, activeBusiness, activeStore } = useAdminStore();
 
   const {
     register,
@@ -39,10 +39,11 @@ export default function CreateUserPage() {
 
   const onSubmit = async (data: UserFormValues) => {
     await new Promise((resolve) => setTimeout(resolve, 600)); // Simulate API call
-    addUser({
-      name: data.name,
-      email: data.email,
-      role: data.role,
+    addProfile({
+      business_id: activeBusiness?.id || null,
+      full_name: data.name,
+      role: data.role === 'Admin' ? 'owner' : 'administrative',
+      assigned_store_id: data.role === 'Admin' ? null : (activeStore?.id || null),
     });
     router.push('/admin/settings');
   };
