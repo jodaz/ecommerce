@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
-import { ProductCarouselItem } from '@/features/products/types/product';
+import { CategoryGroup } from '@/features/products/types/product';
 
-export async function getProductsForStore(businessId: string): Promise<Record<string, ProductCarouselItem[]>> {
+export async function getProductsForStore(businessId: string): Promise<CategoryGroup[]> {
   const supabase = await createClient();
 
   // Fetch products and their related category for the given business
@@ -14,37 +14,90 @@ export async function getProductsForStore(businessId: string): Promise<Record<st
       base_price,
       image_url,
       business_categories (
-        name
+        name,
+        slug,
+        has_page
       )
     `)
     .eq('business_id', businessId);
 
   if (error || !products) {
     console.error('Error fetching products:', error);
-    return {};
+    return [];
   }
 
-  // Group products by category name
-  const grouped = products.reduce<Record<string, ProductCarouselItem[]>>((acc, product) => {
-    // Determine category name, default to 'General' if no category
-    const categoryName = (product.business_categories as any)?.name || 'General';
+  // Group products by category
+  const groups: Record<string, CategoryGroup> = {};
+  
+  products.forEach((product) => {
+    const category = product.business_categories as {
+      name: string;
+      slug: string;
+      has_page: boolean;
+    } | null;
     
-    if (!acc[categoryName]) {
-      acc[categoryName] = [];
+    const categoryName = category?.name || 'General';
+    const categorySlug = category?.slug || 'general';
+    const hasPage = category?.has_page || false;
+
+    if (!groups[categorySlug]) {
+      groups[categorySlug] = {
+        name: categoryName,
+        slug: categorySlug,
+        hasPage: hasPage,
+        items: []
+      };
     }
 
-    acc[categoryName].push({
+    groups[categorySlug].items.push({
       id: product.id,
       title: product.name,
       description: product.description || undefined,
       image: product.image_url || 'https://placehold.co/600x600/18181b/ffffff?text=No+Image',
       cta: `$${product.base_price}`,
+      href: `/products/${product.id}`,
     });
+  });
 
-    return acc;
-  }, {});
+  return Object.values(groups);
+}
 
-  return grouped;
+export async function getProductsByCategorySlug(businessId: string, categorySlug: string) {
+  const supabase = await createClient();
+
+  const { data: category, error: catError } = await supabase
+    .from('business_categories')
+    .select('id, name, slug, has_page')
+    .eq('business_id', businessId)
+    .eq('slug', categorySlug)
+    .single();
+
+  if (catError || !category) return null;
+
+  const { data: products, error } = await supabase
+    .from('business_products')
+    .select(`
+      id,
+      name,
+      description,
+      base_price,
+      image_url
+    `)
+    .eq('business_id', businessId)
+    .eq('category_id', category.id);
+
+  if (error) return null;
+
+  return {
+    category,
+    products: products.map(p => ({
+      id: p.id,
+      title: p.name,
+      description: p.description,
+      price: p.base_price,
+      image: p.image_url || 'https://placehold.co/600x600/18181b/ffffff?text=No+Image'
+    }))
+  };
 }
 
 export async function getAllProductsForBusiness(businessId: string) {

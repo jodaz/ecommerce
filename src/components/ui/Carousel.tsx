@@ -7,6 +7,8 @@ import Autoplay from 'embla-carousel-autoplay';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+import Link from 'next/link';
+
 export interface CarouselItem {
   id: number | string;
   title: string;
@@ -15,6 +17,7 @@ export interface CarouselItem {
   badge?: string;
   cta?: string;
   icon?: React.ReactNode;
+  href?: string;
 }
 
 interface CarouselProps {
@@ -24,6 +27,7 @@ interface CarouselProps {
   autoplayDelay?: number;
   loop?: boolean;
   className?: string;
+  textVariant?: 'light' | 'dark';
 }
 
 export default function Carousel({
@@ -33,6 +37,7 @@ export default function Carousel({
   autoplayDelay = 4000,
   loop = true,
   className,
+  textVariant = 'dark',
 }: CarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel(
     { loop, align: isHero ? 'center' : 'start', containScroll: 'trimSnaps' },
@@ -63,17 +68,11 @@ export default function Carousel({
     <div className={cn('relative group w-full', className)}>
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className={cn(
-                'relative flex-[0_0_100%] min-w-0 transition-opacity duration-500',
-                !isHero && 'md:flex-[0_0_33.33%] lg:flex-[0_0_25%] px-2'
-              )}
-            >
+          {items.map((item) => {
+            const Content = (
               <div
                 className={cn(
-                  'relative overflow-hidden',
+                  'relative overflow-hidden group/item',
                   isHero ? 'h-[80vh] w-full' : 'aspect-[4/5] rounded-xl border border-gray-100 bg-white'
                 )}
               >
@@ -102,8 +101,9 @@ export default function Carousel({
                 {/* Content Overlay */}
                 <div
                   className={cn(
-                    'relative z-10 w-full h-full flex flex-col',
-                    isHero ? 'p-6 md:p-12 lg:p-24 justify-center text-white' : 'p-4 md:p-6 justify-end text-black'
+                    'relative z-10 w-full h-full flex flex-col transition-colors duration-300',
+                    isHero ? 'p-6 md:p-12 lg:p-24 justify-center text-white' : 'p-4 md:p-6 justify-end',
+                    !isHero && textVariant === 'light' ? 'text-white bg-black/20 hover:bg-black/40' : !isHero && 'text-black'
                   )}
                 >
                   {/* Hero Gradient Overlay */}
@@ -113,7 +113,7 @@ export default function Carousel({
                     <span
                       className={cn(
                         'inline-block px-3 py-1 text-[10px] font-black uppercase tracking-widest w-fit mb-3 md:mb-4',
-                        isHero ? 'bg-white text-black' : 'bg-black text-white'
+                        isHero || textVariant === 'light' ? 'bg-white text-black' : 'bg-black text-white'
                       )}
                     >
                       {item.badge}
@@ -122,7 +122,10 @@ export default function Carousel({
 
                   {item.icon && !isHero && (
                     <div className="mb-4">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-black text-white">
+                      <span className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-full font-bold",
+                        textVariant === 'light' ? "bg-white text-black" : "bg-black text-white"
+                      )}>
                         {item.icon}
                       </span>
                     </div>
@@ -140,29 +143,50 @@ export default function Carousel({
                     <p
                       className={cn(
                         'font-medium',
-                        isHero ? 'text-base md:text-lg lg:text-xl text-gray-200 mb-6 md:mb-8' : 'text-xs md:text-sm text-gray-500'
+                        isHero ? 'text-base md:text-lg lg:text-xl text-gray-200 mb-6 md:mb-8' : 'text-xs md:text-sm',
+                        !isHero && textVariant === 'light' ? 'text-gray-100' : !isHero && 'text-gray-500'
                       )}
                     >
                       {item.description}
                     </p>
 
                     {item.cta && (
-                      <button
+                      <div
                         className={cn(
-                          'mt-3 md:mt-4 px-6 md:px-8 py-2 md:py-3 text-xs font-bold uppercase tracking-widest transition-all',
+                          'mt-3 md:mt-4 px-6 md:px-8 py-2 md:py-3 text-xs font-bold uppercase tracking-widest transition-all inline-block',
                           isHero
                             ? 'bg-white text-black hover:bg-gray-200'
-                            : 'border border-black text-black hover:bg-black hover:text-white'
+                            : textVariant === 'light'
+                              ? 'bg-white text-black hover:bg-zinc-200'
+                              : 'border border-black text-black hover:bg-black hover:text-white'
                         )}
                       >
                         {item.cta}
-                      </button>
+                      </div>
                     )}
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+
+            return (
+              <div
+                key={item.id}
+                className={cn(
+                  'relative flex-[0_0_100%] min-w-0 transition-opacity duration-500',
+                  !isHero && 'md:flex-[0_0_33.33%] lg:flex-[0_0_25%] px-2'
+                )}
+              >
+                {item.href ? (
+                  <Link href={item.href} className="block cursor-pointer">
+                    {Content}
+                  </Link>
+                ) : (
+                  Content
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

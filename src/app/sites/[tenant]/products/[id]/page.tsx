@@ -1,9 +1,10 @@
 import { notFound } from 'next/navigation';
-import { ShoppingBag } from 'lucide-react';
 import { PriceDisplay } from '@/components/ui/price-display';
-import { formatUsd } from '@/lib/currency';
 import { getProductById } from '@/lib/api/products';
 import { getBusinessBySlug } from '@/lib/api/business';
+import ProductActions from './ProductActions';
+
+import Image from 'next/image';
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ tenant: string, id: string }> }) {
   const { tenant, id } = await params;
@@ -18,6 +19,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   }
 
   const product = {
+    id: dbProduct.id,
     title: dbProduct.name,
     category: dbProduct.business_categories?.name || 'General',
     price: dbProduct.base_price,
@@ -25,19 +27,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     description: dbProduct.description || 'Sin descripción disponible.'
   };
 
-  // Pre-fill a WhatsApp message with the correct USD notation
-  const whatsappMsg = encodeURIComponent(`Hola, estoy interesado en el producto: ${product.title} (${formatUsd(product.price)}). ¿Tienen disponibilidad?`);
-  const whatsappUrl = `https://wa.me/5804121833072?text=${whatsappMsg}`;
-
   return (
     <div className="container mx-auto px-4 py-16 flex-1">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
         {/* Product Image */}
-        <div className="relative aspect-square bg-zinc-50 border border-zinc-200">
-          <img 
+        <div className="relative aspect-square bg-zinc-50 border border-zinc-200 overflow-hidden">
+          <Image 
             src={product.image} 
             alt={product.title} 
-            className="w-full h-full object-cover mix-blend-multiply"
+            fill
+            className="object-cover mix-blend-multiply"
+            priority
           />
         </div>
 
@@ -54,15 +54,15 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             {product.description}
           </p>
 
-          <a 
-            href={whatsappUrl} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="w-full bg-black text-white h-14 flex items-center justify-center gap-3 font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors"
-          >
-            <ShoppingBag size={20} />
-            Comprar por WhatsApp
-          </a>
+          <ProductActions 
+            product={{
+              id: product.id,
+              name: product.title,
+              price: product.price,
+              image: product.image
+            }} 
+            tenantSlug={tenant}
+          />
 
           <div className="mt-12 pt-8 border-t border-zinc-200">
             <p className="text-sm text-zinc-500 uppercase tracking-widest">

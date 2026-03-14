@@ -222,6 +222,7 @@ export interface Database {
           business_id: string
           name: string
           slug: string
+          has_page: boolean
           created_at: string
           updated_at: string
         }
@@ -230,6 +231,7 @@ export interface Database {
           business_id: string
           name: string
           slug: string
+          has_page?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -238,6 +240,7 @@ export interface Database {
           business_id?: string
           name?: string
           slug?: string
+          has_page?: boolean
           created_at?: string
           updated_at?: string
         }

@@ -7,10 +7,16 @@ import { Toaster } from 'sonner';
 
 interface TenantLayoutClientProps {
   children: React.ReactNode;
-  business: any; // We can refine this type eventually, but 'any' is quick for the DB return
+  business: {
+    id: string;
+    name: string;
+    slug: string;
+    logo_url?: string;
+  };
+  usdRate: number;
 }
 
-export function TenantLayoutClient({ children, business }: TenantLayoutClientProps) {
+export function TenantLayoutClient({ children, business, usdRate }: TenantLayoutClientProps) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.includes('/admin');
 
@@ -25,7 +31,7 @@ export function TenantLayoutClient({ children, business }: TenantLayoutClientPro
 
   return (
     <>
-      <Navbar business={business} />
+      <Navbar business={business} usdRate={usdRate} />
       <main className="flex-1 flex flex-col">
         {children}
       </main>

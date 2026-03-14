@@ -14,4 +14,12 @@ export interface ProductCarouselItem {
   image?: string;
   badge?: string;
   cta?: string;
+  href?: string;
+}
+
+export interface CategoryGroup {
+  name: string;
+  slug: string;
+  hasPage: boolean;
+  items: ProductCarouselItem[];
 }

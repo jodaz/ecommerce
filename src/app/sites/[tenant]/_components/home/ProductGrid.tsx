@@ -1,13 +1,12 @@
 import ProductRow from '@/features/products/components/ProductRow';
+import { CategoryGroup } from '@/features/products/types/product';
 
 interface ProductGridProps {
-  groupedProducts: Record<string, any[]>;
+  groupedProducts: CategoryGroup[];
 }
 
 export default function ProductGrid({ groupedProducts }: ProductGridProps) {
-  const hasProducts = Object.entries(groupedProducts).length > 0;
-
-  if (!hasProducts) {
+  if (groupedProducts.length === 0) {
     return (
       <div className="py-20 text-center text-gray-500 bg-white">
         No hay productos disponibles en esta tienda.
@@ -17,8 +16,15 @@ export default function ProductGrid({ groupedProducts }: ProductGridProps) {
 
   return (
     <div className="bg-white">
-      {Object.entries(groupedProducts).map(([categoryName, items]) => (
-        <ProductRow key={categoryName} title={categoryName} items={items} />
+      {groupedProducts.map((group, index) => (
+        <ProductRow 
+          key={group.slug} 
+          title={group.name} 
+          items={group.items} 
+          slug={group.slug}
+          hasPage={group.hasPage}
+          index={index} 
+        />
       ))}
     </div>
   );

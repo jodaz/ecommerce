@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { TenantLayoutClient } from "./TenantLayoutClient";
 import { getBusinessBySlug } from "@/lib/api/business";
+import { getExchangeRates } from "@/lib/currency";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({ params }: { params: Promise<{ tenant: string }> }): Promise<Metadata> {
@@ -28,5 +29,20 @@ export default async function TenantLayout({
     notFound();
   }
 
-  return <TenantLayoutClient business={business as any}>{children}</TenantLayoutClient>;
+  const rates = await getExchangeRates();
+  const usdRate = rates?.USD || 1;
+
+  return (
+    <TenantLayoutClient 
+      business={{
+        id: business.id,
+        name: business.name,
+        slug: business.slug,
+        logo_url: business.logo_url || undefined
+      }} 
+      usdRate={usdRate}
+    >
+      {children}
+    </TenantLayoutClient>
+  );
 }

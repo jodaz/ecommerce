@@ -1,6 +1,9 @@
 import { cache } from 'react';
 import { createClient } from './supabase/server';
 
+// These utilities are now in currency-shared.ts to be used in Client Components
+export { formatUsd, formatVes } from './currency-shared';
+
 export const getExchangeRates = cache(async () => {
   const supabase = await createClient();
 
@@ -42,18 +45,3 @@ export const getExchangeRates = cache(async () => {
   // Absolute fallback to 1:1 if all else fails locally
   return { USD: 1, EUR: 1 };
 });
-
-export function formatUsd(amount: number) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(amount);
-}
-
-export function formatVes(amount: number) {
-  // Using es-VE for correct dot/comma placement in Bolivares
-  return new Intl.NumberFormat('es-VE', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
