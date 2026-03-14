@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { ExternalLink, Check, X, Pencil, Trash2, Image as ImageIcon, Plus, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, Image as ImageIcon, Plus, Loader2, History } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { getProducts, deleteProduct, getBusinessBySlug } from '@/lib/api/inventory-client';
+import { StockAdjustmentModal } from './_components/StockAdjustmentModal';
+import Image from 'next/image';
 
 export default function AdminInventoryPage() {
   const { tenant } = useParams();
@@ -14,38 +16,43 @@ export default function AdminInventoryPage() {
   const [bcvRate, setBcvRate] = useState<number>(1);
   const [loading, setLoading] = useState(true);
   const [businessId, setBusinessId] = useState<string | null>(null);
+  
+  // Stock adjustment modal state
+  const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<{ id: string; name: string } | null>(null);
+
+  const loadData = useCallback(async () => {
+    try {
+      const business = await getBusinessBySlug(tenant as string);
+      
+      // Fetch Akomo global rates directly from client proxy or original API
+      try {
+        const res = await fetch('https://api.akomo.xyz/api/exchange-rates');
+        if (res.ok) {
+          const data = await res.json();
+          const usdLabel = data?.rates?.find((r: any) => r.label === 'USD')?.value;
+          if (usdLabel) setBcvRate(parseFloat(usdLabel.replace(',', '.')));
+        }
+      } catch (e) {
+        console.error('Failed to get explicit client side rate for inventory', e);
+      }
+
+      if (business) {
+        setBusinessId(business.id);
+        const data = await getProducts(business.id);
+        setProducts(data || []);
+      }
+    } catch (error) {
+      console.error('Error loading inventory:', error);
+      toast.error('Error al cargar el inventario');
+    } finally {
+      setLoading(false);
+    }
+  }, [tenant]);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const business = await getBusinessBySlug(tenant as string);
-        
-        // Fetch Akomo global rates directly from client proxy or original API
-        try {
-          const res = await fetch('https://api.akomo.xyz/api/exchange-rates');
-          if (res.ok) {
-            const data = await res.json();
-            const usdLabel = data?.rates?.find((r: any) => r.label === 'USD')?.value;
-            if (usdLabel) setBcvRate(parseFloat(usdLabel.replace(',', '.')));
-          }
-        } catch (e) {
-          console.error('Failed to get explicit client side rate for inventory', e);
-        }
-
-        if (business) {
-          setBusinessId(business.id);
-          const data = await getProducts(business.id);
-          setProducts(data || []);
-        }
-      } catch (error) {
-        console.error('Error loading inventory:', error);
-        toast.error('Error al cargar el inventario');
-      } finally {
-        setLoading(false);
-      }
-    }
     loadData();
-  }, [tenant]);
+  }, [loadData]);
 
   const handleDelete = async (id: string, name: string) => {
     if (confirm(`¿Estás seguro de que deseas eliminar "${name}"? Esta acción no se puede deshacer.`)) {
@@ -59,6 +66,11 @@ export default function AdminInventoryPage() {
         toast.error('Error al eliminar el producto');
       }
     }
+  };
+
+  const openAdjustModal = (product: any) => {
+    setSelectedProduct({ id: product.id, name: product.name });
+    setIsAdjustModalOpen(true);
   };
 
   if (loading) {
@@ -77,13 +89,22 @@ export default function AdminInventoryPage() {
           <h1 className="text-3xl font-bold tracking-tight uppercase text-black">Inventario</h1>
           <p className="text-zinc-500 mt-2 font-medium tracking-wide">Gestión de productos y niveles de stock</p>
         </div>
-        <Link 
-          href="/admin/inventory/new"
-          className="group relative inline-flex items-center gap-2 bg-black text-white px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-zinc-800 transition-all active:scale-95 shrink-0 rounded-none shadow-sm"
-        >
-          <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
-          <span>Nuevo Producto</span>
-        </Link>
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Link 
+            href="/admin/inventory/history"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 border-2 border-zinc-200 bg-white px-6 py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-zinc-50 transition-all shrink-0"
+          >
+            <History className="w-4 h-4" />
+            <span>Historial</span>
+          </Link>
+          <Link 
+            href="/admin/inventory/new"
+            className="flex-1 sm:flex-none group relative inline-flex items-center justify-center gap-2 bg-black text-white px-8 py-4 text-xs font-bold uppercase tracking-[0.2em] hover:bg-zinc-800 transition-all shrink-0"
+          >
+            <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
+            <span>Nuevo Producto</span>
+          </Link>
+        </div>
       </div>
 
       {/* Mobile Card Layout (< md) */}
@@ -99,15 +120,23 @@ export default function AdminInventoryPage() {
               className="bg-white border border-zinc-200 p-4 space-y-4 group active:bg-zinc-50 transition-colors"
             >
               <div className="flex gap-4">
-                <div className="w-20 h-20 bg-zinc-100 flex items-center justify-center border border-zinc-200 shrink-0 overflow-hidden">
+                <div className="w-20 h-20 bg-zinc-100 flex items-center justify-center border border-zinc-200 shrink-0 overflow-hidden relative">
                   {p.image_url ? (
-                    <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                    <Image src={p.image_url} alt={p.name} fill className="object-cover" />
                   ) : (
                     <ImageIcon className="w-8 h-8 text-zinc-300" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-bold text-black truncate pr-4">{p.name}</h3>
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-bold text-black truncate pr-4">{p.name}</h3>
+                    <button 
+                      onClick={() => openAdjustModal(p)}
+                      className="p-1 text-zinc-400 hover:text-black"
+                    >
+                      <History size={16} />
+                    </button>
+                  </div>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {p.business_categories?.name && (
                       <span className="inline-flex items-center text-[10px] uppercase font-bold tracking-wider text-zinc-400">
@@ -129,7 +158,7 @@ export default function AdminInventoryPage() {
                     </div>
                     <div className="flex flex-col border-l border-zinc-100 pl-4">
                       <span className="text-[10px] uppercase font-bold tracking-widest text-zinc-400">
-                        Stock
+                        Stock Total
                       </span>
                       <span className={`text-xs font-bold uppercase tracking-widest mt-1.5 ${p.stock === 0 ? 'text-red-600' : 'text-zinc-900'}`}>
                         {p.stock === 0 ? 'AGOTADO' : p.stock}
@@ -168,7 +197,7 @@ export default function AdminInventoryPage() {
               <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Producto</th>
               <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Categoría</th>
               <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Precio</th>
-              <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Stock</th>
+              <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Stock Total</th>
               <th className="px-6 py-5 text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400 text-right">Acciones</th>
             </tr>
           </thead>
@@ -184,9 +213,9 @@ export default function AdminInventoryPage() {
                   className="group hover:bg-zinc-50 transition-colors"
                 >
                   <td className="px-6 py-5">
-                    <div className="w-14 h-14 bg-zinc-100 flex items-center justify-center border border-zinc-200 group-hover:border-zinc-300 transition-colors overflow-hidden">
+                    <div className="w-14 h-14 bg-zinc-100 flex items-center justify-center border border-zinc-200 group-hover:border-zinc-300 transition-colors overflow-hidden relative">
                       {p.image_url ? (
-                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                        <Image src={p.image_url} alt={p.name} fill className="object-cover" />
                       ) : (
                         <ImageIcon className="w-6 h-6 text-zinc-300 group-hover:text-zinc-400 transition-colors" />
                       )}
@@ -213,12 +242,25 @@ export default function AdminInventoryPage() {
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className={`text-xs font-bold tracking-widest ${p.stock === 0 ? 'text-red-600' : 'text-black'}`}>
-                      {p.stock === 0 ? 'AGOTADO' : p.stock}
-                    </span>
+                    <button 
+                      onClick={() => openAdjustModal(p)}
+                      className="group/stock flex items-center gap-2"
+                    >
+                      <span className={`text-xs font-bold tracking-widest ${p.stock === 0 ? 'text-red-600' : 'text-black'}`}>
+                        {p.stock === 0 ? 'AGOTADO' : p.stock}
+                      </span>
+                      <History className="w-3.5 h-3.5 text-zinc-300 group-hover/stock:text-black transition-colors" />
+                    </button>
                   </td>
                   <td className="px-6 py-5 text-right">
                     <div className="flex items-center justify-end gap-1.5 translate-x-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                      <button 
+                        onClick={() => openAdjustModal(p)}
+                        className="p-2.5 text-zinc-400 hover:text-black hover:bg-zinc-100 transition-all active:scale-95" 
+                        title="Gestionar Stock"
+                      >
+                        <History className="w-5 h-5" />
+                      </button>
                       <Link 
                         href={`/admin/inventory/${p.id}/edit`}
                         className="p-2.5 text-zinc-400 hover:text-black hover:bg-zinc-100 transition-all active:scale-95" 
@@ -253,6 +295,16 @@ export default function AdminInventoryPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <StockAdjustmentModal 
+        isOpen={isAdjustModalOpen}
+        onClose={() => {
+          setIsAdjustModalOpen(false);
+          loadData(); // Refresh list to get new total stock
+        }}
+        product={selectedProduct}
+        businessId={businessId || ''}
+      />
     </div>
   );
 }

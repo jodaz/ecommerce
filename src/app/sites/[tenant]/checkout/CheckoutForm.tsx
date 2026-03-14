@@ -69,13 +69,41 @@ export default function CheckoutForm({ business, paymentMethods, usdRate }: Chec
   const selectedPaymentMethodId = watch('paymentMethodId');
   const selectedPaymentMethod = paymentMethods.find(m => m.id === selectedPaymentMethodId);
 
-  const onSubmit = async (_data: CheckoutValues) => {
+  const onSubmit = async (data: CheckoutValues) => {
     setIsSubmitting(true);
-    // Simulate API call
-    console.log('Finalizing purchase for:', business.name, _data);
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    setShowSuccessModal(true);
+    try {
+      const response = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          business_id: business.id,
+          customer_name: data.fullName,
+          customer_id_number: data.cedula,
+          customer_phone: data.phone,
+          customer_address: data.address,
+          total_amount: total,
+          payment_method_id: data.paymentMethodId,
+          payment_reference: data.paymentReference,
+          items: items.map(item => ({
+            id: item.id,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create order');
+      }
+
+      setShowSuccessModal(true);
+    } catch (error: any) {
+      console.error('Error creating order:', error);
+      alert(error.message || 'Error al procesar el pedido. Por favor intente de nuevo.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFinalClose = () => {

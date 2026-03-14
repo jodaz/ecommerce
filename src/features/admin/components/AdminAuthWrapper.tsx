@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useLayoutEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAdminStore } from '@/stores/adminStore';
 import { AdminNavbar } from './AdminNavbar';
@@ -11,7 +11,7 @@ export function AdminAuthWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setMounted(true);
   }, []);
 
