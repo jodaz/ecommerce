@@ -128,3 +128,36 @@ export async function deletePaymentMethod(id: string) {
   });
   if (!res.ok) throw new Error('Error deleting payment method');
 }
+
+export async function getStores(businessId: string) {
+  const res = await fetch(`/api/stores?business_id=${encodeURIComponent(businessId)}`);
+  if (!res.ok) throw new Error('Error fetching stores');
+  return res.json();
+}
+
+export async function createStore(data: any) {
+  const res = await fetch('/api/stores', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Error creating store');
+  return res.json();
+}
+
+export async function updateStore(id: string, data: any) {
+  const res = await fetch(`/api/stores/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error('Error updating store');
+  return res.json();
+}
+
+export async function deleteStore(id: string) {
+  const res = await fetch(`/api/stores/${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Error deleting store');
+}

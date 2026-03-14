@@ -194,3 +194,7 @@ export const TikTokIcon = ({ className, ...props }: Omit<IconProps, 'icon'>) => 
 export const HistoryIcon = ({ className, ...props }: Omit<IconProps, 'icon'>) => (
   <Icon icon="lucide:history" className={className} {...props} />
 );
+
+export const MapPinIcon = ({ className, ...props }: Omit<IconProps, 'icon'>) => (
+  <Icon icon="lucide:map-pin" className={className} {...props} />
+);

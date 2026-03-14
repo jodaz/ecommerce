@@ -23,7 +23,10 @@ export async function getBusinessBySlug(slug: string) {
       stores (
         id,
         name,
-        is_main
+        address,
+        phone,
+        is_main,
+        is_active
       )
     `)
     .eq('slug', slug)
@@ -138,5 +141,36 @@ export async function getPaymentMethodsForBusiness(businessId: string) {
     console.error('Error fetching payment methods:', error);
     return [];
   }
+  return data;
+}
+
+export async function getStoresByBusinessSlug(slug: string) {
+  const supabase = await createClient();
+  
+  // First get the business ID
+  const { data: business, error: bizError } = await supabase
+    .from('businesses')
+    .select('id')
+    .eq('slug', slug)
+    .single();
+
+  if (bizError || !business) {
+    console.error('Error finding business for stores:', bizError);
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('stores')
+    .select('*')
+    .eq('business_id', business.id)
+    .eq('is_active', true)
+    .order('is_main', { ascending: false })
+    .order('name', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching stores:', error);
+    return [];
+  }
+
   return data;
 }

@@ -5,28 +5,15 @@ import { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import {
-  PayPalIcon,
-  ZelleIcon,
-  BinanceIcon,
-  SmartphoneIcon,
-  BankIcon,
-  PencilIcon,
-  Trash2Icon,
-  CheckIcon,
-  XIcon
-} from '@/components/core/icons';
 import Link from 'next/link';
-import { useAdminStore, PaymentMethodType } from '@/stores/adminStore';
+import { useAdminStore } from '@/stores/adminStore';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
-import { getPaymentMethods, createPaymentMethod, updatePaymentMethod, deletePaymentMethod } from '@/lib/api/inventory-client';
+import { PencilIcon, Trash2Icon } from '@/components/core/icons';
 
 // Modular Components
 import BusinessProfileForm from '../../_components/settings/BusinessProfileForm';
-import PaymentMethodsTable from '../../_components/settings/PaymentMethodsTable';
-import PaymentMethodModal from '../../_components/settings/PaymentMethodModal';
-import DeleteConfirmDialog from '@/components/ui/DeleteConfirmDialog';
+import PaymentMethodsSection from '../../_components/settings/PaymentMethodsSection';
+import StoresSection from '../../_components/settings/StoresSection';
 
 const settingsSchema = z.object({
   companyName: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
@@ -40,21 +27,6 @@ const settingsSchema = z.object({
 
 type SettingsFormValues = z.infer<typeof settingsSchema>;
 
-const PAYMENT_ICONS: Record<PaymentMethodType, any> = {
-  'PayPal': PayPalIcon,
-  'Zelle': ZelleIcon,
-  'Binance': BinanceIcon,
-  'Pago Móvil': SmartphoneIcon,
-  'Transferencia Bancaria': BankIcon,
-};
-
-const PAYMENT_COLORS: Record<PaymentMethodType, string> = {
-  'PayPal': 'text-[#003087]',
-  'Zelle': 'text-[#6d1ed1]',
-  'Binance': 'text-[#F3BA2F]',
-  'Pago Móvil': 'text-emerald-600',
-  'Transferencia Bancaria': 'text-zinc-700',
-};
 
 export default function AdminSettingsPage() {
   const { 
@@ -74,21 +46,28 @@ export default function AdminSettingsPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(activeBusiness?.logo_url || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Payment Methods States
-  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
-  const [loadingPayments, setLoadingPayments] = useState(false);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [editingPayment, setEditingPayment] = useState<any>(null);
-  const [paymentForm, setPaymentForm] = useState({ type: 'Zelle', label: '', details: '', is_active: true });
-  
-  // Delete States
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [pmToDelete, setPmToDelete] = useState<{ id: string, label: string } | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
   const params = useParams();
   const tenant = params.tenant as string;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<SettingsFormValues>({
+    resolver: zodResolver(settingsSchema),
+    defaultValues: {
+      companyName: activeBusiness?.name || '',
+      description: businessSettings?.description || '',
+      phone: businessSettings?.phone || '',
+      facebook: businessSettings?.facebook_url || '',
+      instagram: businessSettings?.instagram_url || '',
+      tiktok: businessSettings?.tiktok_url || '',
+      twitter: businessSettings?.twitter_url || '',
+    },
+  });
 
   // Hydrate store if needed
   useEffect(() => {
@@ -129,36 +108,6 @@ export default function AdminSettingsPage() {
     hydrateStore();
   }, [activeBusiness, businessSettings, login, tenant]);
 
-  const loadPaymentMethods = async (businessId: string) => {
-    try {
-      setLoadingPayments(true);
-      const data = await getPaymentMethods(businessId);
-      setPaymentMethods(data || []);
-    } catch (error) {
-      toast.error('Error al cargar los métodos de pago');
-    } finally {
-      setLoadingPayments(false);
-    }
-  };
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<SettingsFormValues>({
-    resolver: zodResolver(settingsSchema),
-    defaultValues: {
-      companyName: activeBusiness?.name || '',
-      description: businessSettings?.description || '',
-      phone: businessSettings?.phone || '',
-      facebook: businessSettings?.facebook_url || '',
-      instagram: businessSettings?.instagram_url || '',
-      tiktok: businessSettings?.tiktok_url || '',
-      twitter: businessSettings?.twitter_url || '',
-    },
-  });
-
   useEffect(() => {
     // Only reset form if not currently editing to prevent wiping user input
     if (!isEditingProfile && (activeBusiness || businessSettings)) {
@@ -174,55 +123,7 @@ export default function AdminSettingsPage() {
       });
       setPreviewUrl(activeBusiness?.logo_url || null);
     }
-    
-    if (activeBusiness && !loadingPayments && paymentMethods.length === 0) {
-      loadPaymentMethods(activeBusiness.id);
-    }
-  }, [activeBusiness, businessSettings, reset, isEditingProfile, loadingPayments, paymentMethods.length]);
-
-  const handleSavePaymentMethod = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeBusiness) return;
-    try {
-      if (editingPayment) {
-        const updated = await updatePaymentMethod(editingPayment.id, paymentForm);
-        setPaymentMethods(prev => prev.map(p => p.id === editingPayment.id ? updated : p));
-        toast.success('Método actualizado', { className: "bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]" });
-      } else {
-        const created = await createPaymentMethod({ ...paymentForm, business_id: activeBusiness.id });
-        setPaymentMethods(prev => [created, ...prev]);
-        toast.success('Método agregado', { className: "bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]" });
-      }
-      setIsPaymentModalOpen(false);
-    } catch (error) {
-      toast.error('Error al guardar el método de pago');
-    }
-  };
-
-  const confirmDeletePaymentMethod = async () => {
-    if (!pmToDelete) return;
-    try {
-      setIsDeleting(true);
-      await deletePaymentMethod(pmToDelete.id);
-      setPaymentMethods(prev => prev.filter(p => p.id !== pmToDelete.id));
-      toast.success('Método eliminado', { className: 'bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]' });
-      setIsDeleteModalOpen(false);
-      setPmToDelete(null);
-    } catch (error) {
-      toast.error('Error al eliminar');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  const handleTogglePaymentStatus = async (id: string, currentStatus: boolean) => {
-    try {
-      const updated = await updatePaymentMethod(id, { is_active: !currentStatus });
-      setPaymentMethods(prev => prev.map(p => p.id === id ? updated : p));
-    } catch (error) {
-      toast.error('Error al cambiar el estado');
-    }
-  };
+  }, [activeBusiness, businessSettings, reset, isEditingProfile]);
 
   const onSubmit = async (data: SettingsFormValues) => {
     console.log('DEBUG: onSubmit triggered with raw data:', JSON.stringify(data, null, 2));
@@ -345,32 +246,12 @@ export default function AdminSettingsPage() {
         />
       </form>
 
-      <PaymentMethodsTable 
-        paymentMethods={paymentMethods}
-        loadingPayments={loadingPayments}
-        onAddMethod={() => {
-          setEditingPayment(null);
-          setPaymentForm({ type: 'Zelle', label: '', details: '', is_active: true });
-          setIsPaymentModalOpen(true);
-        }}
-        onEditMethod={(pm) => {
-          setEditingPayment(pm);
-          setPaymentForm({
-            type: pm.type,
-            label: pm.label,
-            details: pm.details,
-            is_active: pm.is_active
-          });
-          setIsPaymentModalOpen(true);
-        }}
-        onDeleteMethod={(id, label) => {
-          setPmToDelete({ id, label });
-          setIsDeleteModalOpen(true);
-        }}
-        onToggleStatus={handleTogglePaymentStatus}
-        PAYMENT_ICONS={PAYMENT_ICONS}
-        PAYMENT_COLORS={PAYMENT_COLORS}
-      />
+      {activeBusiness && (
+        <>
+          <PaymentMethodsSection businessId={activeBusiness.id} />
+          <StoresSection businessId={activeBusiness.id} userRole={useAdminStore.getState().currentProfile?.role} />
+        </>
+      )}
 
       <div className="space-y-6 bg-white border border-zinc-200 p-6 md:p-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-zinc-200">
@@ -440,24 +321,6 @@ export default function AdminSettingsPage() {
         </div>
       </div>
       
-      <PaymentMethodModal 
-        isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
-        editingPayment={editingPayment}
-        paymentForm={paymentForm}
-        onFormChange={setPaymentForm}
-        onSave={handleSavePaymentMethod}
-        PAYMENT_ICONS={PAYMENT_ICONS}
-      />
-
-      <DeleteConfirmDialog 
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        onConfirm={confirmDeletePaymentMethod}
-        title="Eliminar Método de Pago"
-        description={`¿Estás seguro de que deseas eliminar el método de pago "${pmToDelete?.label}"? Esta acción no se puede deshacer.`}
-        isLoading={isDeleting}
-      />
     </div>
   );
 }

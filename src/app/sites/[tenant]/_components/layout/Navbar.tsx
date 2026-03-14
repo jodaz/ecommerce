@@ -55,7 +55,7 @@ export default function Navbar({ business, usdRate }: NavbarProps) {
             <Link href="/products" className="text-sm font-bold uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
               Catálogo
             </Link>
-            <Link href="/contact" className="text-sm font-bold uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
+            <Link href="/locations" className="text-sm font-bold uppercase tracking-widest text-zinc-500 hover:text-black transition-colors">
               Ubicaciones
             </Link>
           </nav>
