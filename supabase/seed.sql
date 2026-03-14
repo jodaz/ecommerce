@@ -57,11 +57,19 @@ INSERT INTO public.profiles (id, full_name, role, business_id)
 VALUES (
     '00000000-0000-0000-0000-000000000000',
     'Administrador de Prueba',
-    'admin',
+    'owner',
     '11111111-1111-1111-1111-111111111111'
 ) ON CONFLICT (id) DO UPDATE SET
-    role = 'admin',
+    role = 'owner',
     business_id = '11111111-1111-1111-1111-111111111111';
+
+-- 4.1 Create business settings (Mandatory)
+INSERT INTO public.business_settings (business_id, description, currency_code)
+VALUES (
+    '11111111-1111-1111-1111-111111111111',
+    'Tienda de prueba para la plataforma e-commerce.',
+    'USD'
+) ON CONFLICT (business_id) DO NOTHING;
 
 -- 5. Add demo categories
 INSERT INTO public.business_categories (id, business_id, name, slug)

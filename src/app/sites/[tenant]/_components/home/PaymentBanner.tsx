@@ -47,7 +47,6 @@ export default function PaymentBanner({ methods = [] }: PaymentBannerProps) {
                     <Icon className={`h-6 w-6 ${color}`} />
                     <span className="text-sm font-bold text-gray-800">{method.type}</span>
                   </div>
-                  {method.label && <span className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">{method.label}</span>}
                 </div>
               );
             })}

@@ -1,17 +1,20 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { 
+import {
   PayPalIcon,
   ZelleIcon,
   BinanceIcon,
   SmartphoneIcon,
   BankIcon,
   PencilIcon,
-  Trash2Icon
+  Trash2Icon,
+  CheckIcon,
+  XIcon
 } from '@/components/core/icons';
 import Link from 'next/link';
 import { useAdminStore, PaymentMethodType } from '@/stores/adminStore';
@@ -57,10 +60,12 @@ export default function AdminSettingsPage() {
   const { 
     activeBusiness, 
     businessSettings, 
-    profiles, 
-    deleteProfile, 
+    profiles,
+    deleteProfile,
     login
   } = useAdminStore();
+
+  console.log('AdminSettingsPage Render: activeBusiness:', activeBusiness?.id, 'businessSettings:', businessSettings?.business_id);
   
   // Profile Edit State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -80,6 +85,49 @@ export default function AdminSettingsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [pmToDelete, setPmToDelete] = useState<{ id: string, label: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+
+  const params = useParams();
+  const tenant = params.tenant as string;
+
+  // Hydrate store if needed
+  useEffect(() => {
+    const hydrateStore = async () => {
+      if ((!activeBusiness || !businessSettings) && tenant) {
+        setIsLoadingData(true);
+        try {
+          console.log('Hydrating store for tenant:', tenant);
+          const res = await fetch(`/api/businesses?slug=${tenant}`);
+          if (res.ok) {
+            const data = await res.json();
+            
+            // We need current profile too. 
+            const { createClient } = await import('@/lib/supabase/client');
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (user) {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id)
+                .single();
+              
+              if (profile) {
+                login(profile, data, data.business_settings || null);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error hydrating store:', error);
+        } finally {
+          setIsLoadingData(false);
+        }
+      }
+    };
+
+    hydrateStore();
+  }, [activeBusiness, businessSettings, login, tenant]);
 
   const loadPaymentMethods = async (businessId: string) => {
     try {
@@ -112,7 +160,9 @@ export default function AdminSettingsPage() {
   });
 
   useEffect(() => {
-    if (activeBusiness || businessSettings) {
+    // Only reset form if not currently editing to prevent wiping user input
+    if (!isEditingProfile && (activeBusiness || businessSettings)) {
+      console.log('Syncing form with store data');
       reset({
         companyName: activeBusiness?.name || '',
         description: businessSettings?.description || '',
@@ -128,7 +178,7 @@ export default function AdminSettingsPage() {
     if (activeBusiness && !loadingPayments && paymentMethods.length === 0) {
       loadPaymentMethods(activeBusiness.id);
     }
-  }, [activeBusiness, businessSettings, reset]);
+  }, [activeBusiness, businessSettings, reset, isEditingProfile, loadingPayments, paymentMethods.length]);
 
   const handleSavePaymentMethod = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,7 +225,18 @@ export default function AdminSettingsPage() {
   };
 
   const onSubmit = async (data: SettingsFormValues) => {
-    if (!activeBusiness) return;
+    console.log('DEBUG: onSubmit triggered with raw data:', JSON.stringify(data, null, 2));
+    if (!activeBusiness) {
+      console.error('Client Error: activeBusiness is null');
+      toast.error('Sesión inválida. Por favor, inicie sesión de nuevo.');
+      return;
+    }
+
+    if (!activeBusiness.id) {
+      console.error('Client Error: activeBusiness.id is missing', activeBusiness);
+      toast.error('Error de configuración: ID de negocio faltante.');
+      return;
+    }
 
     try {
       let finalLogoUrl = activeBusiness.logo_url;
@@ -195,37 +256,45 @@ export default function AdminSettingsPage() {
         finalLogoUrl = uploadData.url;
       }
 
+      const payload = {
+        businessId: activeBusiness.id,
+        name: data.companyName,
+        description: data.description || '',
+        phone: data.phone || '',
+        facebook_url: data.facebook || '',
+        instagram_url: data.instagram || '',
+        tiktok_url: data.tiktok || '',
+        twitter_url: data.twitter || '',
+        logo_url: finalLogoUrl
+      };
+
+      console.log('DEBUG: Submitting payload to API:', JSON.stringify(payload, null, 2));
+
       const response = await fetch('/api/businesses/settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          businessId: activeBusiness.id,
-          name: data.companyName,
-          description: data.description,
-          phone: data.phone,
-          facebook_url: data.facebook,
-          instagram_url: data.instagram,
-          tiktok_url: data.tiktok,
-          twitter_url: data.twitter,
-          logo_url: finalLogoUrl
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) throw new Error('Error al guardar la configuración');
 
       const currentState = useAdminStore.getState();
+      const updatedBusiness = { ...activeBusiness, id: activeBusiness.id, name: data.companyName, logo_url: finalLogoUrl };
+      const updatedSettings = { 
+        ...businessSettings!, 
+        business_id: activeBusiness.id,
+        description: data.description || '',
+        phone: data.phone || '',
+        facebook_url: data.facebook || '',
+        instagram_url: data.instagram || '',
+        tiktok_url: data.tiktok || '',
+        twitter_url: data.twitter || ''
+      };
+
       login(
         currentState.currentProfile!, 
-        { ...activeBusiness, name: data.companyName, logo_url: finalLogoUrl }, 
-        { 
-          ...businessSettings!, 
-          description: data.description || '',
-          phone: data.phone || '',
-          facebook_url: data.facebook || '',
-          instagram_url: data.instagram || '',
-          tiktok_url: data.tiktok || '',
-          twitter_url: data.twitter || ''
-        }
+        updatedBusiness as any, 
+        updatedSettings as any
       );
 
       setIsEditingProfile(false);

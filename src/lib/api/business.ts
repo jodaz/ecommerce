@@ -30,8 +30,15 @@ export async function getBusinessBySlug(slug: string) {
     .single();
 
   if (error || !business) {
-    console.error('Error fetching business by slug:', error);
+    console.error('DB API Error fetching business by slug:', error);
     return null;
+  }
+
+  console.log('DB API Success: Fetched business:', business.id, 'settings type:', typeof business.business_settings);
+  if (business.business_settings) {
+    console.log('DB API: Settings found:', JSON.stringify(business.business_settings, null, 2));
+  } else {
+    console.warn('DB API: No settings found for business:', business.id);
   }
 
   // Find the primary store for inventory defaults if needed
@@ -57,22 +64,27 @@ export async function updateBusinessSettings(
   }
 ) {
   const supabase = await createClient();
+  console.log('DB API: updateBusinessSettings called for ID:', businessId, 'with data:', data);
 
+  let businessResult = null;
   // If name or logo_url are present, update businesses table
   if (data.name !== undefined || data.logo_url !== undefined) {
     const businessUpdate: any = {};
     if (data.name !== undefined) businessUpdate.name = data.name;
     if (data.logo_url !== undefined) businessUpdate.logo_url = data.logo_url;
 
-    const { error: businessError } = await supabase
+    const { data: updatedBusiness, error: businessError } = await supabase
       .from('businesses')
       .update(businessUpdate)
-      .eq('id', businessId);
+      .eq('id', businessId)
+      .select()
+      .single();
 
     if (businessError) {
       console.error('Error updating business:', businessError);
       return { success: false, error: businessError };
     }
+    businessResult = updatedBusiness;
   }
 
   // Update business_settings table
@@ -84,19 +96,33 @@ export async function updateBusinessSettings(
   if (data.tiktok_url !== undefined) settingsUpdate.tiktok_url = data.tiktok_url;
   if (data.twitter_url !== undefined) settingsUpdate.twitter_url = data.twitter_url;
 
+  let settingsResult = null;
+
   if (Object.keys(settingsUpdate).length > 0) {
-    const { error: settingsError } = await supabase
+    console.log('DB API: Upserting settings for businessId:', businessId);
+    
+    const { data: updatedSettings, error: settingsError } = await supabase
       .from('business_settings')
-      .update(settingsUpdate)
-      .eq('business_id', businessId);
+      .upsert({ 
+        business_id: businessId,
+        ...settingsUpdate 
+      }, { onConflict: 'business_id' })
+      .select()
+      .single();
 
     if (settingsError) {
-      console.error('Error updating business settings:', settingsError);
+      console.error('DB API Error updating business settings:', settingsError);
       return { success: false, error: settingsError };
     }
+    settingsResult = updatedSettings;
+    console.log('DB API Success: settings updated');
   }
 
-  return { success: true };
+  return { 
+    success: true,
+    business: businessResult, 
+    settings: settingsResult 
+  };
 }
 
 export async function getPaymentMethodsForBusiness(businessId: string) {

@@ -4,9 +4,11 @@ import { updateBusinessSettings } from '@/lib/api/business';
 export async function PUT(request: Request) {
   try {
     const data = await request.json();
+    console.log('API: Updating business settings with data:', data);
     const { businessId, ...updateData } = data;
 
     if (!businessId) {
+      console.error('API Error: Missing businessId in request body');
       return NextResponse.json({ error: 'Missing businessId' }, { status: 400 });
     }
 
