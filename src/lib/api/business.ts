@@ -43,15 +43,7 @@ export async function getBusinessBySlug(slug: string) {
     .single();
 
   if (error || !business) {
-    console.error('DB API Error fetching business by slug:', error);
     return null;
-  }
-
-  console.log('DB API Success: Fetched business:', business.id, 'settings type:', typeof business.business_settings);
-  if (business.business_settings) {
-    console.log('DB API: Settings found:', JSON.stringify(business.business_settings, null, 2));
-  } else {
-    console.warn('DB API: No settings found for business:', business.id);
   }
 
   // Find active subscription
@@ -91,7 +83,6 @@ export async function updateBusinessSettings(
   }
 ) {
   const supabase = await createClient();
-  console.log('DB API: updateBusinessSettings called for ID:', businessId, 'with data:', data);
 
   let businessResult = null;
   // If name or logo_url are present, update businesses table
@@ -108,7 +99,6 @@ export async function updateBusinessSettings(
       .single();
 
     if (businessError) {
-      console.error('Error updating business:', businessError);
       return { success: false, error: businessError };
     }
     businessResult = updatedBusiness;
@@ -126,8 +116,6 @@ export async function updateBusinessSettings(
   let settingsResult = null;
 
   if (Object.keys(settingsUpdate).length > 0) {
-    console.log('DB API: Upserting settings for businessId:', businessId);
-    
     const { data: updatedSettings, error: settingsError } = await supabase
       .from('business_settings')
       .upsert({ 
@@ -138,11 +126,9 @@ export async function updateBusinessSettings(
       .single();
 
     if (settingsError) {
-      console.error('DB API Error updating business settings:', settingsError);
       return { success: false, error: settingsError };
     }
     settingsResult = updatedSettings;
-    console.log('DB API Success: settings updated');
   }
 
   return { 
@@ -162,7 +148,6 @@ export async function getPaymentMethodsForBusiness(businessId: string) {
     .order('created_at', { ascending: true });
 
   if (error) {
-    console.error('Error fetching payment methods:', error);
     return [];
   }
   return data;
@@ -179,7 +164,6 @@ export async function getStoresByBusinessSlug(slug: string) {
     .single();
 
   if (bizError || !business) {
-    console.error('Error finding business for stores:', bizError);
     return [];
   }
 
@@ -192,7 +176,6 @@ export async function getStoresByBusinessSlug(slug: string) {
     .order('name', { ascending: true });
 
   if (error) {
-    console.error('Error fetching stores:', error);
     return [];
   }
 

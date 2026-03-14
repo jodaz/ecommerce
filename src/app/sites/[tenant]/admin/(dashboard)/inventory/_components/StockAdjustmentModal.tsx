@@ -58,7 +58,6 @@ export function StockAdjustmentModal({ isOpen, onClose, product, businessId }: S
         }
       }
     } catch (error) {
-      console.error('Error loading inventory:', error);
       toast.error('Error al cargar inventario por sucursal');
     } finally {
       setLoading(false);
@@ -105,7 +104,6 @@ export function StockAdjustmentModal({ isOpen, onClose, product, businessId }: S
         toast.error(err.error || 'Error al actualizar inventario');
       }
     } catch (error) {
-      console.error('Adjustment error:', error);
       toast.error('Error de red');
     } finally {
       setSubmitting(false);

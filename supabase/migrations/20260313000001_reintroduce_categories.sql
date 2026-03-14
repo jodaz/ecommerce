@@ -22,7 +22,4 @@ CREATE POLICY "Categories viewable by everyone" ON public.business_categories FO
 
 -- Management policy (Owners)
 CREATE POLICY "Owners can manage their business categories" ON public.business_categories
-    FOR ALL USING (EXISTS (
-        SELECT 1 FROM public.profiles 
-        WHERE profiles.id = auth.uid() AND profiles.business_id = business_categories.business_id AND profiles.role = 'owner'
-    ));
+    FOR ALL USING (check_is_owner_of_business(business_id));

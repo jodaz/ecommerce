@@ -4,9 +4,59 @@
 -- 1. Create Demo Businesses
 INSERT INTO public.businesses (id, name, slug)
 VALUES 
-('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Mega Import (Emprendedor)', 'megaimport'),
-('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Corporación MultiStore (Empresarial)', 'corpmulti')
+('bbbbbbbb-bbbb-4bbb-abbb-bbbbbbbbbbbb', 'Mega Import (Emprendedor)', 'megaimport'),
+('cccccccc-cccc-4ccc-accc-cccccccccccc', 'Corporación MultiStore (Empresarial)', 'corpmulti')
 ON CONFLICT (id) DO NOTHING;
+
+-- 1.1 Create Demo Admins
+DO $$
+BEGIN
+    INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, is_super_admin, 
+        confirmation_token, recovery_token, email_change_token_new, email_change, 
+        phone_change, phone_change_token, email_change_token_current, reauthentication_token)
+    VALUES (
+        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaa1',
+        '00000000-0000-0000-0000-000000000000',
+        'admin@megaimport.com',
+        crypt('demo123', gen_salt('bf', 10)),
+        now(),
+        '{"provider": "email", "providers": ["email"]}',
+        '{"sub":"aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaa1", "email_verified": true}',
+        now(),
+        now(),
+        'authenticated',
+        false,
+        '', '', '', '', '', '', '', ''
+    ) ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, encrypted_password = crypt('demo123', gen_salt('bf', 10)), recovery_token = '', email_change_token_new = '', email_change = '';
+
+
+    INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, is_super_admin,
+        confirmation_token, recovery_token, email_change_token_new, email_change, 
+        phone_change, phone_change_token, email_change_token_current, reauthentication_token)
+    VALUES (
+        'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaa2',
+        '00000000-0000-0000-0000-000000000000',
+        'admin@corpmulti.com',
+        crypt('demo123', gen_salt('bf', 10)),
+        now(),
+        '{"provider": "email", "providers": ["email"]}',
+        '{"sub":"aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaa2", "email_verified": true}',
+        now(),
+        now(),
+        'authenticated',
+        false,
+        '', '', '', '', '', '', '', ''
+    ) ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email, encrypted_password = crypt('demo123', gen_salt('bf', 10)), recovery_token = '', email_change_token_new = '', email_change = '';
+
+END $$;
+
+-- 1.2 Create Profiles for Demo Admins
+INSERT INTO public.profiles (id, full_name, role, business_id)
+VALUES 
+('aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaa1', 'Admin Mega Import', 'owner', 'bbbbbbbb-bbbb-4bbb-abbb-bbbbbbbbbbbb'),
+('aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaa2', 'Admin Corp MultiStore', 'owner', 'cccccccc-cccc-4ccc-accc-cccccccccccc')
+ON CONFLICT (id) DO UPDATE SET business_id = EXCLUDED.business_id, role = 'owner';
+
 
 -- 2. Create Business Settings
 INSERT INTO public.business_settings (business_id, description, instagram_url, currency_code)

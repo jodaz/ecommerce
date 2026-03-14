@@ -47,7 +47,6 @@ export default function EditCategoryPage() {
           }
         }
       } catch (error) {
-        console.error('Error loading category:', error);
         toast.error('Error al cargar la categoría');
       } finally {
         setLoading(false);
@@ -72,7 +71,6 @@ export default function EditCategoryPage() {
       });
       router.push('/admin/categories');
     } catch (error) {
-      console.error('Error updating category:', error);
       toast.error('Error al actualizar la categoría');
     }
   };

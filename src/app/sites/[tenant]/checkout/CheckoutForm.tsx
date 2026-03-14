@@ -99,7 +99,6 @@ export default function CheckoutForm({ business, paymentMethods, usdRate }: Chec
 
       setShowSuccessModal(true);
     } catch (error: any) {
-      console.error('Error creating order:', error);
       alert(error.message || 'Error al procesar el pedido. Por favor intente de nuevo.');
     } finally {
       setIsSubmitting(false);

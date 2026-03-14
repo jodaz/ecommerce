@@ -19,7 +19,6 @@ export async function GET(request: Request) {
   });
 
   if (error) {
-    console.error('Error synchronizing session:', error.message);
     return NextResponse.redirect(`${origin}/admin/login?error=sync_failed`);
   }
 

@@ -37,7 +37,7 @@ export default function AdminStockHistoryPage() {
           }
         }
       } catch (error) {
-        console.error('Error loading logs:', error);
+        // Silently fail or use toast
       } finally {
         setLoading(false);
       }

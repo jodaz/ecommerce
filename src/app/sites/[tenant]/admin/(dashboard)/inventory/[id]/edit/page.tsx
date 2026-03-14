@@ -66,7 +66,6 @@ export default function EditProductPage() {
           }
         }
       } catch (error) {
-        console.error('Error loading product data:', error);
         toast.error('Error al cargar datos del producto');
       } finally {
         setLoading(false);
@@ -97,7 +96,6 @@ export default function EditProductPage() {
       });
       router.push('/admin/inventory');
     } catch (error) {
-      console.error('Error updating product:', error);
       toast.error('Error al actualizar el producto');
     }
   };

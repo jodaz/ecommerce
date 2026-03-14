@@ -70,7 +70,6 @@ export default function CreateCategoryPage() {
       });
       router.push('/admin/categories');
     } catch (error) {
-      console.error('Error saving category:', error);
       toast.error('Error al guardar la categoría');
     }
   };

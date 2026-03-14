@@ -22,7 +22,6 @@ export async function getProductsForStore(businessId: string): Promise<CategoryG
     .eq('business_id', businessId);
 
   if (error || !products) {
-    console.error('Error fetching products:', error);
     return [];
   }
 

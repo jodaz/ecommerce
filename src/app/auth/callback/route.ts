@@ -18,7 +18,6 @@ export async function GET(request: Request) {
     const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
     
     if (exchangeError) {
-      console.error('Error exchanging code:', exchangeError.message);
       return NextResponse.redirect(`${origin}/admin/login?error=auth_exchange_failed`);
     }
 
@@ -67,7 +66,6 @@ export async function GET(request: Request) {
       .eq('business_id', business.id);
 
     if (countError) {
-      console.error('Error checking business profiles:', countError.message);
       return NextResponse.redirect(`${origin}/admin/login?error=database_error`);
     }
 
@@ -82,7 +80,7 @@ export async function GET(request: Request) {
         });
 
       if (claimError) {
-        console.error('Error claiming business:', claimError.message);
+        // Error claiming business
         // Quizás el usuario logueó pero falló el registro de rol. 
         // Permitimos continuar si ya existe (carrera de ratas).
       }

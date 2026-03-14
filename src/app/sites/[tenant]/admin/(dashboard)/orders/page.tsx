@@ -69,7 +69,6 @@ export default function AdminOrdersPage() {
         }
       }
     } catch (error) {
-      console.error('Error loading orders:', error);
       toast.error('Error al cargar pedidos');
     } finally {
       setLoading(false);

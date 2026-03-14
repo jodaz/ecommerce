@@ -5,44 +5,64 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto CASCADE;
 -- 1. Create a dummy Auth User (Owner of Emprendedor Business)
 INSERT INTO auth.users (
     id, instance_id, email, encrypted_password, email_confirmed_at, 
-    raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, is_super_admin
+    raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, is_super_admin,
+    confirmation_token, recovery_token, email_change_token_new, email_change, 
+    phone_change, phone_change_token, email_change_token_current, reauthentication_token
 )
 VALUES (
     '00000000-0000-0000-0000-000000000000',
     '00000000-0000-0000-0000-000000000000',
-    'emprendedor@simpleshop.xyz',
-    crypt('password123', gen_salt('bf')),
+    'admin@demo.com',
+    crypt('demo123', gen_salt('bf')),
     now(),
     '{"provider": "email", "providers": ["email"]}',
-    '{}',
+    '{"sub":"00000000-0000-0000-0000-000000000000", "email_verified": true}',
     now(),
     now(),
     'authenticated',
-    false
+    false,
+    '', '', '', '', '', '', '', ''
 ) ON CONFLICT (id) DO UPDATE SET 
+    email = EXCLUDED.email,
     email_confirmed_at = now(),
-    encrypted_password = crypt('password123', gen_salt('bf'));
+    encrypted_password = crypt('demo123', gen_salt('bf')),
+    raw_user_meta_data = EXCLUDED.raw_user_meta_data,
+    recovery_token = '',
+    email_change_token_new = '',
+    email_change = '',
+    reauthentication_token = '';
+
 
 -- 1.1 Create another dummy Auth User (Owner of Empresarial Business)
 INSERT INTO auth.users (
     id, instance_id, email, encrypted_password, email_confirmed_at, 
-    raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, is_super_admin
+    raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, is_super_admin,
+    confirmation_token, recovery_token, email_change_token_new, email_change, 
+    phone_change, phone_change_token, email_change_token_current, reauthentication_token
 )
 VALUES (
     '00000000-0000-0000-0000-000000000001',
     '00000000-0000-0000-0000-000000000000',
-    'empresarial@simpleshop.xyz',
-    crypt('password123', gen_salt('bf')),
+    'admin@multi.com',
+    crypt('demo123', gen_salt('bf')),
     now(),
     '{"provider": "email", "providers": ["email"]}',
-    '{}',
+    '{"sub":"00000000-0000-0000-0000-000000000001", "email_verified": true}',
     now(),
     now(),
     'authenticated',
-    false
+    false,
+    '', '', '', '', '', '', '', ''
 ) ON CONFLICT (id) DO UPDATE SET 
+    email = EXCLUDED.email,
     email_confirmed_at = now(),
-    encrypted_password = crypt('password123', gen_salt('bf'));
+    encrypted_password = crypt('demo123', gen_salt('bf')),
+    raw_user_meta_data = EXCLUDED.raw_user_meta_data,
+    recovery_token = '',
+    email_change_token_new = '',
+    email_change = '',
+    reauthentication_token = '';
+
 
 -- 2. Create Businesses
 -- 2.1 Emprendedor Business (Slug: demo)

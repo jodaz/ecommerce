@@ -21,7 +21,6 @@ export async function GET(request: Request) {
     const expectedSecret = process.env.CRON_SECRET;
 
     if (!expectedSecret) {
-      console.error('CRON_SECRET environment variable is not set');
       return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
     }
 
@@ -97,7 +96,6 @@ export async function GET(request: Request) {
     );
 
   } catch (error) {
-    console.error('Error syncing exchange rates:', error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Unknown error occurred' }, 
       { status: 500 }

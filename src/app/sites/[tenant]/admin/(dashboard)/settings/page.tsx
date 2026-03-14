@@ -37,8 +37,6 @@ export default function AdminSettingsPage() {
     login
   } = useAdminStore();
 
-  console.log('AdminSettingsPage Render: activeBusiness:', activeBusiness?.id, 'businessSettings:', businessSettings?.business_id);
-  
   // Profile Edit State
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   
@@ -73,7 +71,6 @@ export default function AdminSettingsPage() {
   useEffect(() => {
     // Only reset form if not currently editing to prevent wiping user input
     if (!isEditingProfile && (activeBusiness || businessSettings)) {
-      console.log('Syncing form with store data');
       reset({
         companyName: activeBusiness?.name || '',
         description: businessSettings?.description || '',
@@ -88,15 +85,12 @@ export default function AdminSettingsPage() {
   }, [activeBusiness, businessSettings, reset, isEditingProfile]);
 
   const onSubmit = async (data: SettingsFormValues) => {
-    console.log('DEBUG: onSubmit triggered with raw data:', JSON.stringify(data, null, 2));
     if (!activeBusiness) {
-      console.error('Client Error: activeBusiness is null');
       toast.error('Sesión inválida. Por favor, inicie sesión de nuevo.');
       return;
     }
 
     if (!activeBusiness.id) {
-      console.error('Client Error: activeBusiness.id is missing', activeBusiness);
       toast.error('Error de configuración: ID de negocio faltante.');
       return;
     }
@@ -130,8 +124,6 @@ export default function AdminSettingsPage() {
         twitter_url: data.twitter || '',
         logo_url: finalLogoUrl
       };
-
-      console.log('DEBUG: Submitting payload to API:', JSON.stringify(payload, null, 2));
 
       const response = await fetch('/api/businesses/settings', {
         method: 'PUT',

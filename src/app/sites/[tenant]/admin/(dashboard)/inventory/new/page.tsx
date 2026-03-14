@@ -43,7 +43,6 @@ export default function CreateProductPage() {
           setCategories(cats || []);
         }
       } catch (error) {
-        console.error('Error loading form data:', error);
         toast.error('Error al cargar datos del formulario');
       } finally {
         setLoading(false);
@@ -90,7 +89,6 @@ export default function CreateProductPage() {
       });
       router.push('/admin/inventory');
     } catch (error) {
-      console.error('Error saving product:', error);
       toast.error('Error al guardar el producto');
     }
   };

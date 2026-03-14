@@ -34,7 +34,7 @@ export default function AdminInventoryPage() {
           if (usdLabel) setBcvRate(parseFloat(usdLabel.replace(',', '.')));
         }
       } catch (e) {
-        console.error('Failed to get explicit client side rate for inventory', e);
+        // Silently fail on rate fetch
       }
 
       if (business) {
@@ -43,7 +43,6 @@ export default function AdminInventoryPage() {
         setProducts(data || []);
       }
     } catch (error) {
-      console.error('Error loading inventory:', error);
       toast.error('Error al cargar el inventario');
     } finally {
       setLoading(false);

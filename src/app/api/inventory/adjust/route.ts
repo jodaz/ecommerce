@@ -58,8 +58,6 @@ export async function POST(request: Request) {
       metadata: metadata || {}
     });
 
-  if (logError) console.error('Failed to create inventory log:', logError);
-
   return NextResponse.json({ 
     success: true, 
     new_quantity: newQuantity 

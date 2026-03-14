@@ -48,25 +48,19 @@ ALTER TABLE public.inventory_logs ENABLE ROW LEVEL SECURITY;
 
 -- 5. Read Policies
 CREATE POLICY "Orders viewable by business owners" ON public.business_orders 
-    FOR SELECT USING (EXISTS (
-        SELECT 1 FROM public.profiles 
-        WHERE profiles.id = auth.uid() AND profiles.business_id = business_orders.business_id AND profiles.role = 'owner'
-    ));
+    FOR SELECT USING (check_is_owner_of_business(business_id));
 
 CREATE POLICY "Order items viewable by business owners" ON public.business_order_items 
-    FOR SELECT USING (EXISTS (
-        SELECT 1 FROM public.business_orders
-        JOIN public.profiles ON profiles.business_id = business_orders.business_id
-        WHERE business_order_items.order_id = business_orders.id 
-          AND profiles.id = auth.uid() 
-          AND profiles.role = 'owner'
-    ));
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.business_orders
+            WHERE id = business_order_items.order_id 
+            AND check_is_owner_of_business(business_id)
+        )
+    );
 
 CREATE POLICY "Logs viewable by business owners" ON public.inventory_logs 
-    FOR SELECT USING (EXISTS (
-        SELECT 1 FROM public.profiles 
-        WHERE profiles.id = auth.uid() AND profiles.business_id = inventory_logs.business_id AND profiles.role = 'owner'
-    ));
+    FOR SELECT USING (check_is_owner_of_business(business_id));
 
 -- 6. Write Policies (Checkout)
 -- Public can insert orders (for now, or maybe authenticated if we add customers)
@@ -76,10 +70,7 @@ CREATE POLICY "Anyone can create order items" ON public.business_order_items FOR
 
 -- 7. Management Policies (Admin)
 CREATE POLICY "Owners can update orders" ON public.business_orders 
-    FOR UPDATE USING (EXISTS (
-        SELECT 1 FROM public.profiles 
-        WHERE profiles.id = auth.uid() AND profiles.business_id = business_orders.business_id AND profiles.role = 'owner'
-    ));
+    FOR UPDATE USING (check_is_owner_of_business(business_id));
 
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_business_orders_business_id ON public.business_orders(business_id);

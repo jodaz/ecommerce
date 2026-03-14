@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Store, ChevronRight, AlertCircle, Loader2 } from 'lucide-react';
+import { Store, ChevronRight, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
@@ -32,6 +32,7 @@ export default function AdminLoginPage() {
   const tenant = params.tenant as string;
   const [urlError, setUrlError] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   const supabase = createClient();
 
@@ -130,13 +131,22 @@ export default function AdminLoginPage() {
             <label htmlFor="password" className="block text-xs font-bold uppercase tracking-widest text-gray-400">
               Contraseña
             </label>
-            <input
-              id="password"
-              type="password"
-              {...register('password')}
-              className={`w-full h-14 px-4 bg-gray-950 border ${errors.password ? 'border-red-500/50' : 'border-gray-800'} focus:outline-none focus:border-emerald-500 transition-colors rounded-xl text-white placeholder:text-gray-600 shadow-inner`}
-              placeholder="••••••••"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                {...register('password')}
+                className={`w-full h-14 pl-4 pr-12 bg-gray-950 border ${errors.password ? 'border-red-500/50' : 'border-gray-800'} focus:outline-none focus:border-emerald-500 transition-colors rounded-xl text-white placeholder:text-gray-600 shadow-inner`}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors p-2"
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
             {errors.password && <p className="text-red-400 text-xs font-semibold">{errors.password.message}</p>}
           </div>
 

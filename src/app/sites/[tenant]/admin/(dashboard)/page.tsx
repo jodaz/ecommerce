@@ -495,7 +495,7 @@ async function AkomoRatesCard() {
       binanceUsdt = usdtData?.average ? parseFloat(usdtData.average).toFixed(4).replace('.', ',') : binanceUsdt;
     }
   } catch (error) {
-    console.error('Failed to fetch Akomo rates:', error);
+    // Silently fail on rate fetch
   }
 
   return (

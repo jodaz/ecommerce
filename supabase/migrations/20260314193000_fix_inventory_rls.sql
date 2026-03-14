@@ -7,36 +7,18 @@ CREATE POLICY "Owners can manage inventory" ON public.store_inventory
     FOR ALL USING (
         EXISTS (
             SELECT 1 FROM public.stores s
-            JOIN public.profiles p ON s.business_id = p.business_id
             WHERE s.id = store_inventory.store_id 
-            AND p.id = auth.uid() 
-            AND p.role = 'owner'
+            AND check_is_owner_of_business(s.business_id)
         )
     )
     WITH CHECK (
         EXISTS (
             SELECT 1 FROM public.stores s
-            JOIN public.profiles p ON s.business_id = p.business_id
             WHERE s.id = store_inventory.store_id 
-            AND p.id = auth.uid() 
-            AND p.role = 'owner'
+            AND check_is_owner_of_business(s.business_id)
         )
     );
 
 CREATE POLICY "Owners can manage products" ON public.business_products
-    FOR ALL USING (
-        EXISTS (
-            SELECT 1 FROM public.profiles p
-            WHERE p.business_id = business_products.business_id
-            AND p.id = auth.uid() 
-            AND p.role = 'owner'
-        )
-    )
-    WITH CHECK (
-        EXISTS (
-            SELECT 1 FROM public.profiles p
-            WHERE p.business_id = business_products.business_id
-            AND p.id = auth.uid() 
-            AND p.role = 'owner'
-        )
-    );
+    FOR ALL USING (check_is_owner_of_business(business_id))
+    WITH CHECK (check_is_owner_of_business(business_id));

@@ -24,7 +24,6 @@ export default function AdminCategoriesPage() {
           setCategories(data || []);
         }
       } catch (error) {
-        console.error('Error loading categories:', error);
         toast.error('Error al cargar las categorías');
       } finally {
         setLoading(false);

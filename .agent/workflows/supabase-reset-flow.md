@@ -26,11 +26,15 @@ Este workflow describe el proceso para vaciar completamente la base de datos rem
 
 3. **Carga de Datos Iniciales (Seed)**
    Ejecutar el contenido de los archivos de semilla en el siguiente orden usando `execute_sql`:
-   1. `supabase/seed.sql`: Crea los usuarios base y la estructura inicial de negocios.
-   2. `supabase/seed_demo.sql`: Crea datos de ejemplo para pruebas de interfaz.
+   1. `supabase/seed.sql`: Crea los usuarios base (`admin@demo.com`, `admin@multi.com`) y la estructura inicial.
+   2. `supabase/seed_demo.sql`: Crea datos de ejemplo y administradores adicionales (`admin@megaimport.com`, `admin@corpmulti.com`).
 
    > [!IMPORTANT]
-   > Validar que los UUIDs en los archivos SQL sean válidos (hexadecimal). Evitar el uso de caracteres como 's' en UUIDs manuales.
+   > #### Reglas de Seeding:
+   > - **Usuarios:** Cada negocio debe tener un administrador con el formato `admin@[slug].com`.
+   > - **Contraseña:** Todos los usuarios de prueba deben usar `demo123`.
+   > - **UUIDs:** Los UUIDs deben ser válidos (hexadecimal). Evitar caracteres como 's' en UUIDs manuales.
+
 
 4. **Verificación**
    Listar las tablas del esquema `public` con `list_tables` para asegurar que la estructura se ha recreado correctamente y realizar un conteo de registros en la tabla `businesses`.

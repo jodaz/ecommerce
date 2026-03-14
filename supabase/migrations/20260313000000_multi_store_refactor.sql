@@ -111,30 +111,34 @@ CREATE POLICY "Stores viewable by everyone" ON public.stores FOR SELECT USING (t
 CREATE POLICY "Products viewable by everyone" ON public.business_products FOR SELECT USING (true);
 CREATE POLICY "Inventory viewable by everyone" ON public.store_inventory FOR SELECT USING (true);
 
--- 7. Management Policies (Owners)
-CREATE POLICY "Owners can manage their business settings" ON public.business_settings
-    FOR ALL USING (EXISTS (
-        SELECT 1 FROM public.profiles 
-        WHERE profiles.id = auth.uid() AND profiles.business_id = business_settings.business_id AND profiles.role = 'owner'
-    ));
-
-CREATE POLICY "Owners can manage their business payment methods" ON public.business_payment_methods
-    FOR ALL USING (EXISTS (
-        SELECT 1 FROM public.profiles 
-        WHERE profiles.id = auth.uid() AND profiles.business_id = business_payment_methods.business_id AND profiles.role = 'owner'
-    ));
-
-CREATE POLICY "Owners can manage their business" ON public.businesses
-    FOR ALL USING (EXISTS (
-        SELECT 1 FROM public.profiles 
-        WHERE profiles.id = auth.uid() AND profiles.business_id = businesses.id AND profiles.role = 'owner'
-    ));
-
 -- 8. Profile Access Policies
+-- Security Definer Function to break RLS recursion
+CREATE OR REPLACE FUNCTION public.check_is_owner_of_business(target_business_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles
+        WHERE id = auth.uid() 
+        AND business_id = target_business_id 
+        AND role = 'owner'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 CREATE POLICY "Users can view their own profile" ON public.profiles FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Owners can view all business profiles" ON public.profiles FOR SELECT USING (
-    EXISTS (
-        SELECT 1 FROM public.profiles AS me 
-        WHERE me.id = auth.uid() AND me.role = 'owner' AND me.business_id = profiles.business_id
-    )
+    check_is_owner_of_business(business_id)
 );
+
+-- Update Management Policies to use the function (Optional but cleaner)
+DROP POLICY IF EXISTS "Owners can manage their business settings" ON public.business_settings;
+CREATE POLICY "Owners can manage their business settings" ON public.business_settings
+    FOR ALL USING (check_is_owner_of_business(business_id));
+
+DROP POLICY IF EXISTS "Owners can manage their business payment methods" ON public.business_payment_methods;
+CREATE POLICY "Owners can manage their business payment methods" ON public.business_payment_methods
+    FOR ALL USING (check_is_owner_of_business(business_id));
+
+DROP POLICY IF EXISTS "Owners can manage their business" ON public.businesses;
+CREATE POLICY "Owners can manage their business" ON public.businesses
+    FOR ALL USING (check_is_owner_of_business(id));

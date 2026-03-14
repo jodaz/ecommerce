@@ -39,7 +39,7 @@ export const getExchangeRates = cache(async () => {
       };
     }
   } catch (apiError) {
-    console.error('Failed fallback Akomo API fetch:', apiError);
+    // Failed fallback Akomo API fetch
   }
 
   // Absolute fallback to 1:1 if all else fails locally

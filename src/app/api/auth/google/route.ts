@@ -39,7 +39,6 @@ export async function GET(request: Request) {
   });
 
   if (error) {
-    console.error('Error initiating Google OAuth:', error.message);
     return NextResponse.redirect(`${origin}/admin/login?error=oauth_init_failed`);
   }
 

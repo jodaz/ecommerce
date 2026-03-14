@@ -81,14 +81,13 @@ export async function POST(req: NextRequest) {
         .eq('is_main', false);
         
       if (storesError) {
-        console.error('Error deactivating extra stores:', storesError);
+        // Error deactivating extra stores
       }
     }
 
     return NextResponse.json({ success: true, subscription: newSubscription });
 
   } catch (error: any) {
-    console.error('Error changing subscription:', error);
     return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
   }
 }

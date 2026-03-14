@@ -42,13 +42,8 @@ ALTER TABLE public.business_subscriptions ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Plans are viewable by everyone." ON public.plans FOR SELECT USING (true);
 CREATE POLICY "Plan prices are viewable by everyone." ON public.plan_prices FOR SELECT USING (true);
 
--- Business subscriptions are viewable by users associated with the business
-CREATE POLICY "Business subscriptions are viewable by business members." ON public.business_subscriptions
-FOR SELECT USING (
-    business_id IN (
-        SELECT business_id FROM public.profiles WHERE id = auth.uid()
-    )
-);
+-- Business subscriptions are viewable by everyone (required for storefront limits)
+CREATE POLICY "Business subscriptions are viewable by everyone" ON public.business_subscriptions FOR SELECT USING (true);
 
 -- Insert Seed Data (Using specific UUIDs so we can reference them if needed, or we can just let it generate and look them up, but for predictability, explicit UUIDs are good for the default plans)
 INSERT INTO public.plans (id, name, description, max_stores)
