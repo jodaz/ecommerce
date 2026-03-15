@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Figtree } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const figtree = Figtree({
@@ -27,6 +28,7 @@ export default function RootLayout({
         className={`${figtree.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
         {children}
+        <Toaster position="top-right" />
         {process.env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
         )}

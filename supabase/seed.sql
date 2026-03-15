@@ -136,6 +136,39 @@ VALUES
 ('11111111-1111-1111-1111-111111111112', 'Negocio grande con múltiples sucursales.', 'USD')
 ON CONFLICT (business_id) DO NOTHING;
 
+-- 5.1 Business Payment Methods
+INSERT INTO public.business_payment_methods (business_id, type, label, details, is_active)
+VALUES 
+(
+    '11111111-1111-1111-1111-111111111111', 
+    'Pago Móvil', 
+    'Pago Móvil Mercantil', 
+    '0412-1111111\nV-12345678\nMercantil (0105)', 
+    true
+),
+(
+    '11111111-1111-1111-1111-111111111111', 
+    'Zelle', 
+    'Zelle Corporativo', 
+    'pagos@demo.com\nDemo Store LLC', 
+    true
+),
+(
+    '11111111-1111-1111-1111-111111111112', 
+    'Pago Móvil', 
+    'Pago Móvil Banesco', 
+    '0412-2222222\nJ-12345678-9\nBanesco (0134)', 
+    true
+),
+(
+    '11111111-1111-1111-1111-111111111112', 
+    'Transferencia Bancaria', 
+    'Banesco Corriente', 
+    '0134-0000-00-0000000000\nCorporación MultiStore\nJ-12345678-9', 
+    true
+)
+ON CONFLICT DO NOTHING;
+
 -- 6. Subscriptions
 -- Plan IDs from migration: 
 -- Emprendedor: 00000000-0000-0000-0000-000000000001

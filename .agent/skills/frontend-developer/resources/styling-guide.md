@@ -116,4 +116,4 @@ Leverage Tailwind's transition utilities for a premium feel.
 ❌ **Inline Styles:** Except for dynamic values (e.g., progress bar width).
 ❌ **Relative Units (em):** Use Tailwind's default `rem` based scale.
 ❌ **Important (`!`):** Avoid using `!important` classes. Fix the specificity or use `tailwind-merge` instead.
-❌ **Third-party UI libraries (Shadcn, Headless UI):** Only use if specifically requested by the user. Default to pure Tailwind.
+✅ **UI Primitives:** Use **shadcn/ui** for complex interactive components (Dialogs, Popovers) as they align with the project's minimalist Zinc aesthetic.

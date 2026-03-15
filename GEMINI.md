@@ -71,6 +71,7 @@ Schema is managed via Supabase migrations in `supabase/migrations/`.
 - `.agent/`: Custom instructions, rules, and skills for AI agents.
 - `src/app/api/`: Backend endpoints (Auth, Admin, Businesses, Products, Orders, etc.).
 - `src/app/sites/[tenant]/`: Tenant-specific page logic (Shopfront and Store Admin).
+- `src/lib/hooks/`: Custom reusable hooks (e.g., `useEventListener`, `useToggle`).
 - `src/features/`: Modularized business features (Onboarding, Inventory, Admin Dashboard).
 - `src/stores/`: Client-side Zustand stores (e.g., `adminStore.ts`, `cartStore.ts`).
 - `src/types/`: Centralized TypeScript interfaces and Database definitions.

@@ -8,10 +8,48 @@ import { PriceDisplayClient } from '@/components/ui/price-display-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, CreditCard, User, MapPin, Phone, Hash, Camera, Loader2, ArrowRight, ShoppingBag } from 'lucide-react';
+import { 
+  CheckCircle2, 
+  CreditCard, 
+  User, 
+  MapPin, 
+  Phone, 
+  Hash, 
+  Camera, 
+  Loader2, 
+  ArrowRight, 
+  ShoppingBag,
+  Copy,
+  Check
+} from 'lucide-react';
+import { 
+  PayPalIcon, 
+  ZelleIcon, 
+  BinanceIcon, 
+  SmartphoneIcon, 
+  BankIcon 
+} from '@/components/core/icons';
 import { cn } from '@/lib/utils';
+import { toast } from 'sonner';
+import React from 'react';
 
 import Image from 'next/image';
+
+const PAYMENT_ICONS: Record<string, any> = {
+  'PayPal': PayPalIcon,
+  'Zelle': ZelleIcon,
+  'Binance': BinanceIcon,
+  'Pago Móvil': SmartphoneIcon,
+  'Transferencia Bancaria': BankIcon,
+};
+
+const PAYMENT_COLORS: Record<string, string> = {
+  'PayPal': 'text-[#003087]',
+  'Zelle': 'text-[#6d1ed1]',
+  'Binance': 'text-[#F3BA2F]',
+  'Pago Móvil': 'text-emerald-600',
+  'Transferencia Bancaria': 'text-zinc-700',
+};
 
 const checkoutSchema = z.object({
   fullName: z.string().min(3, 'Nombre completo requerido'),
@@ -43,11 +81,45 @@ export default function CheckoutForm({ business, paymentMethods, usdRate }: Chec
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      // Modern API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for older browsers or non-secure contexts
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+        } catch (err) {
+          // Fallback failed
+        }
+        document.body.removeChild(textArea);
+      }
+      
+      setIsCopied(true);
+      toast.success('Copiado al portapapeles', {
+        className: "bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]"
+      });
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      // Final fallback/error handling if everything fails
+    }
+  };
 
   const {
     register,
@@ -216,29 +288,39 @@ export default function CheckoutForm({ business, paymentMethods, usdRate }: Chec
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {paymentMethods.map((method) => (
-                <label 
-                  key={method.id}
-                  className={cn(
-                    "relative flex flex-col p-4 border-2 cursor-pointer transition-all hover:bg-zinc-50",
-                    selectedPaymentMethodId === method.id 
-                      ? "border-black bg-zinc-50" 
-                      : "border-zinc-100"
-                  )}
-                >
-                  <input
-                    type="radio"
-                    value={method.id}
-                    {...register('paymentMethodId')}
-                    className="sr-only"
-                  />
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-black uppercase tracking-tight">{method.label}</span>
-                    {selectedPaymentMethodId === method.id && <CheckCircle2 size={16} className="text-black" />}
-                  </div>
-                  <span className="text-[10px] text-zinc-500 uppercase font-bold">{method.type}</span>
-                </label>
-              ))}
+              {paymentMethods.map((method) => {
+                const Icon = PAYMENT_ICONS[method.type] || CreditCard;
+                const colorClass = PAYMENT_COLORS[method.type] || 'text-zinc-500';
+                
+                return (
+                  <label 
+                    key={method.id}
+                    className={cn(
+                      "relative flex flex-col p-4 border-2 cursor-pointer transition-all hover:bg-zinc-50 group",
+                      selectedPaymentMethodId === method.id 
+                        ? "border-black bg-zinc-50" 
+                        : "border-zinc-100"
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      value={method.id}
+                      {...register('paymentMethodId')}
+                      className="sr-only"
+                    />
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className={cn("p-1.5 rounded-lg bg-zinc-100 group-hover:bg-white transition-colors", colorClass)}>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <span className="text-sm font-black uppercase tracking-tight">{method.label}</span>
+                      </div>
+                      {selectedPaymentMethodId === method.id && <CheckCircle2 size={16} className="text-black" />}
+                    </div>
+                    <span className="text-[10px] text-zinc-500 uppercase font-bold ml-8">{method.type}</span>
+                  </label>
+                );
+              })}
             </div>
             {errors.paymentMethodId && <p className="text-[10px] font-bold text-red-500 uppercase">{errors.paymentMethodId.message}</p>}
 
@@ -246,13 +328,68 @@ export default function CheckoutForm({ business, paymentMethods, usdRate }: Chec
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-6 bg-zinc-950 text-white rounded space-y-4"
+                className="p-6 bg-zinc-950 text-white rounded space-y-4 relative overflow-hidden group"
               >
-                <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400 border-b border-zinc-800 pb-2">
-                  Datos para el pago
-                </h3>
+                <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-zinc-400">
+                    Datos para el pago
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(selectedPaymentMethod.details)}
+                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-500 hover:text-white transition-colors"
+                  >
+                    <AnimatePresence mode="wait" initial={false}>
+                      {isCopied ? (
+                        <motion.div
+                          key="check"
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.5, opacity: 0 }}
+                          className="flex items-center gap-1.5 text-emerald-400"
+                        >
+                          <Check size={12} strokeWidth={3} />
+                          <span>Copiado</span>
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="copy"
+                          initial={{ scale: 0.5, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0.5, opacity: 0 }}
+                          className="flex items-center gap-1.5"
+                        >
+                          <Copy size={12} />
+                          <span>Copiar</span>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                </div>
                 <div className="whitespace-pre-line text-sm font-medium leading-relaxed">
                   {selectedPaymentMethod.details}
+                </div>
+
+                {/* Prominent Alert when copied */}
+                <AnimatePresence>
+                  {isCopied && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                      animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                      className="bg-emerald-500/20 border border-emerald-500/50 p-3 flex items-center gap-3 overflow-hidden"
+                    >
+                      <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">
+                        ¡Listo! Los datos han sido copiados a tu portapapeles.
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
+                {/* Subtle background decoration */}
+                <div className="absolute -right-4 -bottom-4 opacity-5 pointer-events-none transition-transform group-hover:scale-110 duration-700">
+                  {PAYMENT_ICONS[selectedPaymentMethod.type] && React.createElement(PAYMENT_ICONS[selectedPaymentMethod.type], { className: "w-24 h-24" })}
                 </div>
               </motion.div>
             )}

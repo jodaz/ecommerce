@@ -137,8 +137,10 @@ Use **frontend-dev-guidelines** when:
 | ------------- | ---------------- |
 | `@/`          | `src/`           |
 | `~types`      | `src/types`      |
+| `~components` | `src/components` |
+| `~hooks`      | `src/lib/hooks`  |
 
-Aliases must be used consistently. Use `@/features/...`, `@/components/...`, and `~types/...`.
+Aliases must be used consistently. Use `@/features/...`, `@/components/...`, `~types/...`, and `~hooks/...`.
 
 ---
 

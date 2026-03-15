@@ -65,6 +65,25 @@ VALUES
 ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Soluciones al mayor y detal (Plan Empresarial).', 'https://instagram.com/corpmulti', 'USD')
 ON CONFLICT (business_id) DO NOTHING;
 
+-- 2.1 Business Payment Methods
+INSERT INTO public.business_payment_methods (business_id, type, label, details, is_active)
+VALUES 
+(
+    'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 
+    'Pago Móvil', 
+    'Pago Móvil Directo', 
+    '0412-1111111\nV-12345678\nMercantil (0105)', 
+    true
+),
+(
+    'cccccccc-cccc-cccc-cccc-cccccccccccc', 
+    'Zelle', 
+    'Zelle Corporativo', 
+    'pagos@corpmulti.com\nCorp Multi LLC', 
+    true
+)
+ON CONFLICT DO NOTHING;
+
 -- 3. Create Stores
 -- One for megaimport
 INSERT INTO public.stores (id, business_id, name, address, is_main)

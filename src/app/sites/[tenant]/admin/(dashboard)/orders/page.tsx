@@ -15,12 +15,15 @@ import {
   MapPin,
   CreditCard,
   Hash,
-  X
+  X,
+  GripVertical
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { getBusinessBySlug } from '@/lib/api/inventory-client';
+import useEventListener from '@/lib/hooks/useEventListener';
+import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
 interface OrderItem {
@@ -52,6 +55,10 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
+  // Drag and Drop State
+  const [draggedOrder, setDraggedOrder] = useState<Order | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+
   const columns = [
     { id: 'new', title: 'Nuevos', icon: Clock, color: 'text-blue-600', bg: 'bg-blue-50' },
     { id: 'preparing', title: 'Preparando', icon: Package, color: 'text-amber-600', bg: 'bg-amber-50' },
@@ -80,6 +87,10 @@ export default function AdminOrdersPage() {
   }, [loadOrders]);
 
   const updateOrderStatus = async (orderId: string, status: string) => {
+    // Optimistic UI update
+    const previousOrders = [...orders];
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: status as any } : o));
+
     try {
       const res = await fetch(`/api/orders/${orderId}`, {
         method: 'PUT',
@@ -88,16 +99,47 @@ export default function AdminOrdersPage() {
       });
 
       if (res.ok) {
-        toast.success('Estado actualizado');
+        toast.success(`Pedido ${status === 'preparing' ? 'en preparación' : 'actualizado'}`, {
+          className: "bg-black text-white rounded-none border border-zinc-800 font-bold uppercase tracking-widest text-[10px]"
+        });
+        // Reload to sync with server
         loadOrders();
         if (selectedOrder?.id === orderId) {
           setSelectedOrder(prev => prev ? { ...prev, status: status as any } : null);
         }
+      } else {
+        throw new Error('Failed to update');
       }
     } catch (error) {
+      setOrders(previousOrders); // Rollback
       toast.error('Error al actualizar estado');
     }
   };
+
+  // Drag and Drop Event Handlers using useEventListener
+  useEventListener('dragover', (e: any) => {
+    const column = e.target.closest('[data-column-id]');
+    if (column) {
+      e.preventDefault(); // Required to allow drop
+      const colId = column.getAttribute('data-column-id');
+      setDragOverColumn(colId);
+    } else {
+      setDragOverColumn(null);
+    }
+  });
+
+  useEventListener('drop', (e: any) => {
+    const column = e.target.closest('[data-column-id]');
+    if (column && draggedOrder) {
+      const newStatus = column.getAttribute('data-column-id');
+      
+      if (newStatus && newStatus !== draggedOrder.status) {
+        updateOrderStatus(draggedOrder.id, newStatus);
+      }
+    }
+    setDragOverColumn(null);
+    setDraggedOrder(null);
+  });
 
   if (loading) {
     return (
@@ -122,8 +164,17 @@ export default function AdminOrdersPage() {
             return o.status === col.id;
           });
 
+          const isOver = dragOverColumn === col.id;
+
           return (
-            <div key={col.id} className="flex flex-col bg-zinc-50 border border-zinc-200 h-full overflow-hidden">
+            <div 
+              key={col.id} 
+              data-column-id={col.id}
+              className={cn(
+                "flex flex-col border h-full overflow-hidden transition-colors duration-200",
+                isOver ? "bg-zinc-100 border-black ring-2 ring-black/5" : "bg-zinc-50 border-zinc-200"
+              )}
+            >
               <div className="p-5 border-b border-zinc-200 bg-white flex justify-between items-center shrink-0">
                 <div className="flex items-center gap-3">
                   <col.icon size={16} className={col.color} />
@@ -143,9 +194,21 @@ export default function AdminOrdersPage() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95 }}
+                      draggable="true"
+                      onDragStart={() => setDraggedOrder(order)}
+                      onDragEnd={() => {
+                        setDraggedOrder(null);
+                        setDragOverColumn(null);
+                      }}
                       onClick={() => setSelectedOrder(order)}
-                      className="group border border-zinc-200 bg-white p-5 hover:border-black cursor-pointer transition-all shadow-sm active:scale-[0.98]"
+                      className={cn(
+                        "group border bg-white p-5 hover:border-black cursor-grab active:cursor-grabbing transition-all shadow-sm active:scale-[0.98] relative",
+                        draggedOrder?.id === order.id ? "opacity-40 grayscale border-dashed border-zinc-400" : "border-zinc-200"
+                      )}
                     >
+                      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <GripVertical size={14} className="text-zinc-300" />
+                      </div>
                       <div className="flex justify-between items-start mb-3">
                         <span className="font-black text-[10px] uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">
                           #{order.id.slice(0, 8)}
